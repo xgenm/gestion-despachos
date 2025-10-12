@@ -6,7 +6,7 @@ import DispatchHistory from './components/DispatchHistory';
 import InvoicingView from './views/InvoicingView';
 import { Dispatch } from './types';
 
-const API_URL = 'http://localhost:3002/api';
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3002/api';
 
 function App() {
   const [dispatches, setDispatches] = useState<Dispatch[]>([]);
