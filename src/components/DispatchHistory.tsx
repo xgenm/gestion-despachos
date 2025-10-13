@@ -18,7 +18,7 @@ const DispatchHistory: React.FC<Props> = ({ dispatches }) => {
       'Camión': d.camion,
       'Placa': d.placa,
       'Total (RD$)': d.total,
-      'Recibido por': d.recibi,
+      'Recibido por': d.recibido,
       'Materiales': d.materials.map(m => `${m.id}: ${m.quantity} m³`).join(', '),
     }));
 
