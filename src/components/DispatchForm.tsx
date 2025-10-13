@@ -65,7 +65,7 @@ const DispatchForm: React.FC<Props> = ({ onSubmit }) => {
     }, 0);
   }, [selectedMaterials]);
 
-  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { id, value } = event.target;
     setFormData(prev => ({ ...prev, [id]: value }));
   };
