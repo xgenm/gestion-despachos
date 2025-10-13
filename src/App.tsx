@@ -49,7 +49,8 @@ function App() {
 
   return (
     <Container className="mt-5">
-      <h1 className="mb-4">Gestión de Despachos - Mina "SALUDALSA"</h1>
+      <h1 className="mb-1">Mina "SALUDALSA"</h1>
+      <p className="text-muted">Código 6700</p>
       <Tabs
         id="main-tabs"
         activeKey={key}

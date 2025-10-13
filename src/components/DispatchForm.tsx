@@ -7,7 +7,7 @@ const materialsData = [
   { id: 'arenaSinLavar', label: 'Arena sin lavar', price: 1200 },
   { id: 'grava', label: 'Grava', price: 1800 },
   { id: 'subBase', label: 'Sub-base', price: 1000 },
-  { id: 'gravaArena', label: 'Grava-arena', price: 1600 },
+  { id: 'gravaArena', label: 'Grava Arena', price: 1600 },
   { id: 'granzote', label: 'Granzote', price: 2000 },
   { id: 'gravillin', label: 'Gravillín', price: 2200 },
   { id: 'cascajoGris', label: 'Cascajo gris (Relleno)', price: 800 },
@@ -163,7 +163,7 @@ const DispatchForm: React.FC<Props> = ({ onSubmit }) => {
 
           <Row className="mb-3">
             <Form.Group as={Col} controlId="recibi">
-              <Form.Label>Recibí</Form.Label>
+              <Form.Label>Recibido</Form.Label>
               <Form.Control type="text" value={formData.recibi} onChange={handleInputChange} />
             </Form.Group>
             <Form.Group as={Col} controlId="total">
