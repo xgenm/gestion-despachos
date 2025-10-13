@@ -4,6 +4,7 @@ import 'bootstrap-icons/font/bootstrap-icons.css';
 import DispatchForm from './components/DispatchForm';
 import DispatchHistory from './components/DispatchHistory';
 import InvoicingView from './views/InvoicingView';
+import AdminView from './views/AdminView';
 import { Dispatch } from './types';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3002/api';
@@ -63,6 +64,9 @@ function App() {
         </Tab>
         <Tab eventKey="invoicing" title="Facturación">
           <InvoicingView dispatches={dispatches} />
+        </Tab>
+        <Tab eventKey="admin" title="Administración">
+          <AdminView />
         </Tab>
       </Tabs>
     </Container>

@@ -1,19 +1,13 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Form, Button, Row, Col, Card, InputGroup } from 'react-bootstrap';
 import { Dispatch } from '../types';
 
-const materialsData = [
-  { id: 'arenaLavada', label: 'Arena lavada', price: 1500 },
-  { id: 'arenaSinLavar', label: 'Arena sin lavar', price: 1200 },
-  { id: 'grava', label: 'Grava', price: 1800 },
-  { id: 'subBase', label: 'Sub-base', price: 1000 },
-  { id: 'gravaArena', label: 'Grava Arena', price: 1600 },
-  { id: 'granzote', label: 'Granzote', price: 2000 },
-  { id: 'gravillin', label: 'Gravillín', price: 2200 },
-  { id: 'cascajoGris', label: 'Cascajo gris (Relleno)', price: 800 },
-  { id: 'base', label: 'Base', price: 1100 },
-  { id: 'rellenoAmarillento', label: 'Relleno amarillento', price: 700 },
-];
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3002/api';
+
+interface AdminData {
+  id: string;
+  name: string;
+}
 
 const initialFormState = {
   despachoNo: '',
@@ -25,8 +19,24 @@ const initialFormState = {
   ficha: '',
   cliente: '',
   celular: '',
-  recibi: '',
+  recibido: '',
+  userId: '',
+  equipmentId: '',
+  operatorId: '',
 };
+
+const materialsData = [
+    { id: 'arenaLavada', label: 'Arena lavada', price: 1500 },
+    { id: 'arenaSinLavar', label: 'Arena sin lavar', price: 1200 },
+    { id: 'grava', label: 'Grava', price: 1800 },
+    { id: 'subBase', label: 'Sub-base', price: 1000 },
+    { id: 'gravaArena', label: 'Grava Arena', price: 1600 },
+    { id: 'granzote', label: 'Granzote', price: 2000 },
+    { id: 'gravillin', label: 'Gravillín', price: 2200 },
+    { id: 'cascajoGris', label: 'Cascajo gris (Relleno)', price: 800 },
+    { id: 'base', label: 'Base', price: 1100 },
+    { id: 'rellenoAmarillento', label: 'Relleno amarillento', price: 700 },
+  ];
 
 interface Props {
   onSubmit: (dispatch: Omit<Dispatch, 'id'>) => void;
@@ -35,6 +45,15 @@ interface Props {
 const DispatchForm: React.FC<Props> = ({ onSubmit }) => {
   const [formData, setFormData] = useState(initialFormState);
   const [selectedMaterials, setSelectedMaterials] = useState<Record<string, { selected: boolean; quantity: number }>>({});
+  const [users, setUsers] = useState<AdminData[]>([]);
+  const [equipment, setEquipment] = useState<AdminData[]>([]);
+  const [operators, setOperators] = useState<AdminData[]>([]);
+
+  useEffect(() => {
+    fetch(`${API_URL}/users`).then(res => res.json()).then(data => setUsers(data.data || []));
+    fetch(`${API_URL}/equipment`).then(res => res.json()).then(data => setEquipment(data.data || []));
+    fetch(`${API_URL}/operators`).then(res => res.json()).then(data => setOperators(data.data || []));
+  }, []);
 
   const total = useMemo(() => {
     return Object.keys(selectedMaterials).reduce((acc, key) => {
@@ -46,7 +65,7 @@ const DispatchForm: React.FC<Props> = ({ onSubmit }) => {
     }, 0);
   }, [selectedMaterials]);
 
-  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { id, value } = event.target;
     setFormData(prev => ({ ...prev, [id]: value }));
   };
@@ -88,7 +107,6 @@ const DispatchForm: React.FC<Props> = ({ onSubmit }) => {
       <Card.Body>
         <Card.Title>Nuevo Despacho</Card.Title>
         <Form onSubmit={handleSubmit}>
-          {/* ... form fields are unchanged ... */}
           <Row className="mb-3">
             <Form.Group as={Col} controlId="despachoNo">
               <Form.Label>Despacho Nº</Form.Label>
@@ -101,8 +119,35 @@ const DispatchForm: React.FC<Props> = ({ onSubmit }) => {
             <Form.Group as={Col} controlId="hora">
               <Form.Label>Hora</Form.Label>
               <Form.Control type="time" value={formData.hora} onChange={handleInputChange} />
+            </Form.G
+roup>
+          </Row>
+
+          <Row className="mb-3">
+            <Form.Group as={Col} controlId="userId">
+              <Form.Label>Atendido por</Form.Label>
+              <Form.Select value={formData.userId} onChange={handleInputChange}>
+                  <option value="">-- Seleccione --</option>
+                  {users.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
+              </Form.Select>
+            </Form.Group>
+            <Form.Group as={Col} controlId="equipmentId">
+              <Form.Label>Equipo</Form.Label>
+              <Form.Select value={formData.equipmentId} onChange={handleInputChange}>
+                  <option value="">-- Seleccione --</option>
+                  {equipment.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
+              </Form.Select>
+            </Form.Group>
+            <Form.Group as={Col} controlId="operatorId">
+              <Form.Label>Operario</Form.Label>
+              <Form.Select value={formData.operatorId} onChange={handleInputChange}>
+                  <option value="">-- Seleccione --</option>
+                  {operators.map(o => <option key={o.id} value={o.id}>{o.name}</option>)}
+              </Form.Select>
             </Form.Group>
           </Row>
+
+          <hr />
 
           <Row className="mb-3">
             <Form.Group as={Col} controlId="camion">
@@ -162,9 +207,9 @@ const DispatchForm: React.FC<Props> = ({ onSubmit }) => {
           </Row>
 
           <Row className="mb-3">
-            <Form.Group as={Col} controlId="recibi">
+            <Form.Group as={Col} controlId="recibido">
               <Form.Label>Recibido</Form.Label>
-              <Form.Control type="text" value={formData.recibi} onChange={handleInputChange} />
+              <Form.Control type="text" value={formData.recibido} onChange={handleInputChange} />
             </Form.Group>
             <Form.Group as={Col} controlId="total">
               <Form.Label>Total a Pagar (RD$)</Form.Label>
