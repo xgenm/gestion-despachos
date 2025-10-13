@@ -10,6 +10,13 @@ export interface Dispatch {
   materials: { id: string; quantity: number }[];
   cliente: string;
   celular: string;
-  recibi: string;
+  recibido: string; // Corregido de 'recibi'
   total: number;
+  userId: string;
+  equipmentId: string;
+  operatorId: string;
+  // Campos opcionales que vienen de los JOINs
+  userName?: string;
+  equipmentName?: string;
+  operatorName?: string;
 }
