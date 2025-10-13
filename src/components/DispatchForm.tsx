@@ -119,8 +119,7 @@ const DispatchForm: React.FC<Props> = ({ onSubmit }) => {
             <Form.Group as={Col} controlId="hora">
               <Form.Label>Hora</Form.Label>
               <Form.Control type="time" value={formData.hora} onChange={handleInputChange} />
-            </Form.G
-roup>
+            </Form.Group>
           </Row>
 
           <Row className="mb-3">
