@@ -1,46 +1,141 @@
-# Getting Started with Create React App
+# Sistema de Gestión de Despachos
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Sistema de gestión de despachos para empresa constructora con frontend en React y backend en Node.js/Express con autenticación JWT.
 
-## Available Scripts
+## Estructura del Proyecto
 
-In the project directory, you can run:
+- `backend/`: API RESTful con Node.js, Express y PostgreSQL
+- `src/`: Aplicación frontend en React con TypeScript
+- `public/`: Archivos estáticos
 
-### `npm start`
+## Configuración Automática del Entorno de Desarrollo
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+### Usando Scripts de Automatización (Windows)
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+1. **Configuración inicial**:
+   ```
+   setup-dev.bat
+   ```
+   Este script instalará todas las dependencias y creará los archivos de configuración necesarios.
 
-### `npm test`
+2. **Iniciar entorno de desarrollo**:
+   ```
+   start-dev.bat
+   ```
+   Este script iniciará automáticamente tanto el backend como el frontend en terminales separadas.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### Configuración Manual
 
-### `npm run build`
+#### Backend
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+1. Navega a la carpeta del backend:
+   ```
+   cd backend
+   ```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+2. Instala las dependencias:
+   ```
+   npm install
+   ```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+3. Crea un archivo `.env` basado en `.env.example` y configura tu conexión a la base de datos PostgreSQL
 
-### `npm run eject`
+4. Inicia el servidor en modo desarrollo:
+   ```
+   npm run dev
+   ```
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+   El backend estará disponible en http://localhost:3002
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+#### Frontend
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+1. Desde la raíz del proyecto, instala las dependencias:
+   ```
+   npm install
+   ```
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+2. Inicia la aplicación en modo desarrollo:
+   ```
+   npm start
+   ```
 
-## Learn More
+   La aplicación estará disponible en http://localhost:3000
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## Configuración de Base de Datos
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+El sistema está configurado para usar PostgreSQL. Para desarrollo, puedes:
+
+1. **Usar una base de datos en la nube (recomendado para desarrollo)**:
+   - Sigue las instrucciones en [CONFIGURAR_BASE_DATOS.md](CONFIGURAR_BASE_DATOS.md)
+   - Crea una base de datos gratuita en Render
+   - Actualiza tu archivo `backend/.env` con la cadena de conexión
+
+2. **Instalar PostgreSQL localmente**:
+   - Descarga e instala PostgreSQL desde [postgresql.org](https://www.postgresql.org/download/)
+   - Crea una base de datos llamada `gestion_despachos`
+   - Configura el archivo `backend/.env` con tus credenciales locales
+
+## Sistema de Autenticación
+
+El sistema utiliza autenticación JWT (JSON Web Tokens) para proteger las rutas y datos:
+
+1. **Registro de administradores**: 
+   - Solo se puede registrar un administrador a través del endpoint `/api/auth/register`
+   - Este endpoint está protegido y requiere un token válido
+
+2. **Inicio de sesión**:
+   - Los usuarios inician sesión en `/api/auth/login`
+   - Se recibe un token JWT que debe ser incluido en el header de las solicitudes
+
+3. **Protección de rutas**:
+   - Todas las rutas de la API (excepto `/api/auth`) requieren un token válido
+   - El frontend verifica la presencia de un token en localStorage
+
+## Despliegue
+
+### Backend en Vercel con Base de Datos en Render
+
+1. Sigue las instrucciones en [INSTRUCCIONES_RENDER.md](INSTRUCCIONES_RENDER.md) para configurar la base de datos en Render
+2. Sigue las instrucciones en [INSTRUCCIONES_VERCEL.md](INSTRUCCIONES_VERCEL.md) para desplegar el backend en Vercel
+
+### Variables de Entorno
+
+Crea un archivo `.env` en la raíz del proyecto con las siguientes variables:
+
+```
+REACT_APP_API_URL=http://localhost:3002/api
+DATABASE_URL=postgresql://usuario:contraseña@host:puerto/nombre_base_datos
+JWT_SECRET=secreto_para_jwt
+PORT=3002
+```
+
+Puedes usar el archivo [.env.example](.env.example) como referencia.
+
+## Primer Uso
+
+1. Ejecuta `setup-dev.bat` para configurar el entorno
+2. Ejecuta `start-dev.bat` para iniciar el entorno de desarrollo
+3. Accede a la aplicación en http://localhost:3000
+4. Serás redirigido a la página de login
+5. Registra un administrador usando el formulario en "Gestión" > "Administradores"
+6. Inicia sesión con las credenciales creadas
+
+## Scripts Disponibles
+
+### Scripts de Automatización (Windows)
+- `setup-dev.bat`: Configura el entorno de desarrollo
+- `start-dev.bat`: Inicia el entorno de desarrollo
+- `init-db.bat`: Inicializa la base de datos de desarrollo
+
+### Backend
+
+- `npm run dev`: Inicia el servidor en modo desarrollo con nodemon
+- `npm run build`: Compila el TypeScript a JavaScript
+- `npm start`: Inicia el servidor compilado
+
+### Frontend
+
+- `npm start`: Inicia la aplicación en modo desarrollo
+- `npm test`: Ejecuta las pruebas en modo interactivo
+- `npm run build`: Construye la aplicación para producción
+- `npm run eject`: Elimina la dependencia de Create React App (operación irreversible)

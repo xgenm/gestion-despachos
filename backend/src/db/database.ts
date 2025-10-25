@@ -1,20 +1,30 @@
-import sqlite3 from 'sqlite3';
-import path from 'path';
+import { Pool } from 'pg';
+import dotenv from 'dotenv';
+import { UserModel } from '../models/User';
 
-const dbPath = path.resolve(__dirname, '..', '..', 'dispatches.db');
+dotenv.config();
 
-const db = new sqlite3.Database(dbPath, (err) => {
-  if (err) {
-    console.error('Error al abrir la base de datos', err.message);
-  } else {
-    console.log('Conectado a la base de datos SQLite.');
-    db.serialize(() => {
-      // Tabla de Despachos (Estructura corregida)
-      db.run(`CREATE TABLE IF NOT EXISTS dispatches (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+// Configuración de la base de datos PostgreSQL
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false
+  }
+});
+
+// Función para inicializar las tablas
+const initializeTables = async () => {
+  let client;
+  try {
+    client = await pool.connect();
+    
+    // Tabla de Despachos
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS dispatches (
+        id SERIAL PRIMARY KEY,
         despachoNo TEXT,
-        fecha TEXT,
-        hora TEXT,
+        fecha DATE,
+        hora TIME,
         camion TEXT,
         placa TEXT,
         color TEXT,
@@ -23,48 +33,110 @@ const db = new sqlite3.Database(dbPath, (err) => {
         cliente TEXT,
         celular TEXT,
         recibido TEXT,
-        total REAL,
+        total DECIMAL(10, 2),
         userId INTEGER,
         equipmentId INTEGER,
         operatorId INTEGER
-      )`);
+      )
+    `);
 
-      // Tabla de Usuarios (Empresas)
-      db.run(`CREATE TABLE IF NOT EXISTS users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+    // Tabla de Usuarios (Empresas)
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS users (
+        id SERIAL PRIMARY KEY,
         name TEXT NOT NULL UNIQUE
-      )`);
+      )
+    `);
 
-      // Tabla de Equipos
-      db.run(`CREATE TABLE IF NOT EXISTS equipment (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+    // Tabla de Equipos
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS equipment (
+        id SERIAL PRIMARY KEY,
         name TEXT NOT NULL UNIQUE
-      )`);
+      )
+    `);
 
-      // Tabla de Operarios
-      db.run(`CREATE TABLE IF NOT EXISTS operators (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+    // Tabla de Operarios
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS operators (
+        id SERIAL PRIMARY KEY,
         name TEXT NOT NULL UNIQUE
-      )`);
+      )
+    `);
 
-      // Tabla de Empresas (Clientes que facturan)
-      db.run(`CREATE TABLE IF NOT EXISTS companies (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+    // Tabla de Empresas (Clientes que facturan)
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS companies (
+        id SERIAL PRIMARY KEY,
         name TEXT NOT NULL UNIQUE,
         address TEXT,
         phone TEXT,
         email TEXT
-      )`);
+      )
+    `);
 
-      // Tabla de Clientes
-      db.run(`CREATE TABLE IF NOT EXISTS clients (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+    // Tabla de Clientes
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS clients (
+        id SERIAL PRIMARY KEY,
         name TEXT NOT NULL,
-        companyId INTEGER,
-        FOREIGN KEY (companyId) REFERENCES companies (id)
-      )`);
-    });
+        companyId INTEGER REFERENCES companies(id)
+      )
+    `);
+    
+    // Inicializar tabla de administradores
+    await UserModel.createTable();
+    
+    console.log('Tablas inicializadas correctamente');
+  } catch (err) {
+    console.error('Error al inicializar las tablas:', err);
+    console.log('La aplicación continuará ejecutándose. Las tablas se crearán cuando se establezca la conexión a la base de datos.');
+  } finally {
+    if (client) {
+      client.release();
+    }
   }
+};
+
+// Inicializar tablas cuando se inicie la aplicación
+// No esperamos a que se complete para no bloquear el inicio del servidor
+initializeTables().catch(err => {
+  console.error('Error durante la inicialización de tablas:', err);
 });
 
-export default db;
+// Función para verificar la conexión a la base de datos
+const checkDatabaseConnection = async () => {
+  try {
+    const client = await pool.connect();
+    await client.query('SELECT NOW()');
+    client.release();
+    console.log('Conexión a la base de datos establecida correctamente');
+    return true;
+  } catch (err) {
+    console.error('No se pudo conectar a la base de datos:', err);
+    return false;
+  }
+};
+
+// Verificar la conexión cada 30 segundos si falla inicialmente
+const startConnectionChecker = () => {
+  const checkConnection = async () => {
+    const isConnected = await checkDatabaseConnection();
+    if (!isConnected) {
+      console.log('Reintentando conexión en 30 segundos...');
+      setTimeout(checkConnection, 30000);
+    } else {
+      // Si la conexión se establece, intentar inicializar las tablas
+      initializeTables().catch(err => {
+        console.error('Error al inicializar tablas después de conectar:', err);
+      });
+    }
+  };
+  
+  checkConnection();
+};
+
+// Iniciar el verificador de conexión
+startConnectionChecker();
+
+export default pool;

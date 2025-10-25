@@ -4,18 +4,22 @@ import db from '../db/database';
 const router = Router();
 
 // GET all users
-router.get('/', (req, res) => {
-  db.all("SELECT * FROM users", [], (err, rows) => {
-    if (err) {
-      console.error('Error al obtener usuarios:', err.message);
-      return res.status(500).json({ error: 'Error al obtener usuarios', details: err.message });
-    }
-    res.json({ data: rows });
-  });
+router.get('/', async (req, res) => {
+  const client = await db.connect();
+  
+  try {
+    const result = await client.query("SELECT * FROM users");
+    res.json({ data: result.rows });
+  } catch (err) {
+    console.error('Error al obtener usuarios:', err);
+    res.status(500).json({ error: 'Error al obtener usuarios', details: (err as Error).message });
+  } finally {
+    client.release();
+  }
 });
 
 // POST new user
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
   const { name } = req.body;
   
   // Validación básica
@@ -23,20 +27,24 @@ router.post('/', (req, res) => {
     return res.status(400).json({ error: 'Nombre de usuario es requerido' });
   }
   
-  db.run("INSERT INTO users (name) VALUES (?)", [name.trim()], function (err) {
-    if (err) {
-      console.error('Error al crear usuario:', err.message);
-      if (err.message.includes('UNIQUE constraint failed')) {
-        return res.status(400).json({ error: 'El nombre de usuario ya existe' });
-      }
-      return res.status(500).json({ error: 'Error al crear usuario', details: err.message });
+  const client = await db.connect();
+  
+  try {
+    const result = await client.query("INSERT INTO users (name) VALUES ($1) RETURNING id, name", [name.trim()]);
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error('Error al crear usuario:', err);
+    if ((err as Error).message.includes('UNIQUE constraint failed') || (err as Error).message.includes('duplicate key')) {
+      return res.status(400).json({ error: 'El nombre de usuario ya existe' });
     }
-    res.json({ id: this.lastID, name: name.trim() });
-  });
+    res.status(500).json({ error: 'Error al crear usuario', details: (err as Error).message });
+  } finally {
+    client.release();
+  }
 });
 
 // DELETE user
-router.delete('/:id', (req, res) => {
+router.delete('/:id', async (req, res) => {
   const id = parseInt(req.params.id);
   
   // Validación de ID
@@ -44,18 +52,22 @@ router.delete('/:id', (req, res) => {
     return res.status(400).json({ error: 'ID inválido' });
   }
   
-  db.run("DELETE FROM users WHERE id = ?", id, function (err) {
-    if (err) {
-      console.error('Error al eliminar usuario:', err.message);
-      return res.status(500).json({ error: 'Error al eliminar usuario', details: err.message });
-    }
+  const client = await db.connect();
+  
+  try {
+    const result = await client.query("DELETE FROM users WHERE id = $1", [id]);
     
-    if (this.changes === 0) {
+    if (result.rowCount === 0) {
       return res.status(404).json({ error: 'Usuario no encontrado' });
     }
     
     res.json({ message: 'Usuario eliminado correctamente' });
-  });
+  } catch (err) {
+    console.error('Error al eliminar usuario:', err);
+    res.status(500).json({ error: 'Error al eliminar usuario', details: (err as Error).message });
+  } finally {
+    client.release();
+  }
 });
 
 export default router;
