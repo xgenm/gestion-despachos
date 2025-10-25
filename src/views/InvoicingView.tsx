@@ -1,12 +1,15 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Container, Card, Form, Button, Table, Row, Col } from 'react-bootstrap';
 import { Dispatch } from '../types';
 import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 
-// Extender la interfaz de jsPDF para incluir autoTable
-interface jsPDFWithAutoTable extends jsPDF {
-  autoTable: (options: any) => jsPDF;
+interface Company {
+  id: number;
+  name: string;
+  address?: string;
+  phone?: string;
+  email?: string;
 }
 
 interface Props {
@@ -14,23 +17,49 @@ interface Props {
 }
 
 const InvoicingView: React.FC<Props> = ({ dispatches }) => {
+  const [companies, setCompanies] = useState<Company[]>([]);
   const [selectedClient, setSelectedClient] = useState<string>('');
-  const [selectedDispatchIds, setSelectedDispatchIds] = useState<string[]>([]);
+  const [selectedCompany, setSelectedCompany] = useState<number>(0);
+  const [selectedDispatchIds, setSelectedDispatchIds] = useState<number[]>([]);
+
+  // Cargar empresas desde el backend
+  useEffect(() => {
+    const fetchCompanies = async () => {
+      try {
+        const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3002/api';
+        const response = await fetch(`${API_URL}/companies`);
+        const data = await response.json();
+        setCompanies(data.data || []);
+      } catch (error) {
+        console.error("Error fetching companies:", error);
+      }
+    };
+
+    fetchCompanies();
+  }, []);
 
   const clients = useMemo(() => Array.from(new Set(dispatches.map(d => d.cliente))), [dispatches]);
 
   const clientDispatches = useMemo(() => dispatches.filter(d => d.cliente === selectedClient), [dispatches, selectedClient]);
 
-  const handleCheckboxChange = (dispatchId: string) => {
+  const handleCheckboxChange = (dispatchId: number) => {
     setSelectedDispatchIds(prev => 
       prev.includes(dispatchId) ? prev.filter(id => id !== dispatchId) : [...prev, dispatchId]
     );
   };
 
   const handleGeneratePDF = () => {
-    const doc = new jsPDF() as jsPDFWithAutoTable;
+    const doc = new jsPDF();
     const selectedData = clientDispatches.filter(d => selectedDispatchIds.includes(d.id));
     const totalFactura = selectedData.reduce((sum, d) => sum + d.total, 0);
+    
+    // Obtener información de la empresa seleccionada
+    const company = companies.find(c => c.id === selectedCompany) || {
+      name: 'Empresa no especificada',
+      address: '',
+      phone: '',
+      email: ''
+    };
 
     // Encabezado de la factura
     doc.setFontSize(20);
@@ -38,13 +67,17 @@ const InvoicingView: React.FC<Props> = ({ dispatches }) => {
     doc.setFontSize(12);
     doc.text(`Cliente: ${selectedClient}`, 14, 32);
     doc.text(`Fecha: ${new Date().toLocaleDateString()}`, 14, 42);
-
+    
+    // Información de la empresa
+    doc.setFontSize(14);
+    doc.text(company.name, 190, 22, { align: 'right' });
     doc.setFontSize(10);
-    doc.text('Mina "SALUDALSA" (CÓDIGO 6700)', 190, 22, { align: 'right' });
-    doc.text('San Cristobal (RD)', 190, 28, { align: 'right' });
+    if (company.address) doc.text(company.address, 190, 28, { align: 'right' });
+    if (company.phone) doc.text(`Tel: ${company.phone}`, 190, 34, { align: 'right' });
+    if (company.email) doc.text(company.email, 190, 40, { align: 'right' });
 
-    // Tabla de despachos
-    doc.autoTable({
+    // Tabla de despachos usando autoTable
+    autoTable(doc, {
       startY: 50,
       head: [['Nº Despacho', 'Fecha', 'Placa', 'Total (RD$)']],
       body: selectedData.map(d => [d.despachoNo, new Date(d.fecha).toLocaleDateString(), d.placa, d.total.toFixed(2)]),
@@ -70,6 +103,26 @@ const InvoicingView: React.FC<Props> = ({ dispatches }) => {
                   <option key={client} value={client}>{client}</option>
                 ))}
               </Form.Select>
+            </Form.Group>
+          </Col>
+          <Col md={6}>
+            <Form.Group controlId="companySelector">
+              <Form.Label>Seleccione la Empresa que Factura</Form.Label>
+              <Form.Select 
+                onChange={(e) => setSelectedCompany(Number(e.target.value))} 
+                value={selectedCompany}
+                disabled={companies.length === 0}
+              >
+                <option value={0}>-- Seleccione una Empresa --</option>
+                {companies.map(company => (
+                  <option key={company.id} value={company.id}>{company.name}</option>
+                ))}
+              </Form.Select>
+              {companies.length === 0 && (
+                <Form.Text className="text-muted">
+                  No hay empresas disponibles. Agregue empresas en la sección de Administración.
+                </Form.Text>
+              )}
             </Form.Group>
           </Col>
         </Row>
@@ -106,7 +159,7 @@ const InvoicingView: React.FC<Props> = ({ dispatches }) => {
             <Button 
               variant="danger"
               onClick={handleGeneratePDF} 
-              disabled={selectedDispatchIds.length === 0}
+              disabled={selectedDispatchIds.length === 0 || selectedCompany === 0}
             >
               <i className="bi bi-file-earmark-pdf me-2"></i>
               Generar Factura PDF

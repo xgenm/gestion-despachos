@@ -5,6 +5,7 @@ import DispatchForm from './components/DispatchForm';
 import DispatchHistory from './components/DispatchHistory';
 import InvoicingView from './views/InvoicingView';
 import AdminView from './views/AdminView';
+import EnhancedAdminView from './views/EnhancedAdminView';
 import { Dispatch } from './types';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3002/api';
@@ -19,7 +20,12 @@ function App() {
       const data = await response.json();
       const formattedData = data.data.map((d: any) => ({
         ...d, 
-        materials: typeof d.materials === 'string' ? JSON.parse(d.materials) : d.materials
+        materials: typeof d.materials === 'string' ? JSON.parse(d.materials) : d.materials,
+        id: Number(d.id),
+        userId: Number(d.userId),
+        equipmentId: Number(d.equipmentId),
+        operatorId: Number(d.operatorId),
+        total: Number(d.total)
       }));
       setDispatches(formattedData);
     } catch (error) {
@@ -38,13 +44,30 @@ function App() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ ...dispatch, id: new Date().toISOString() }),
+        body: JSON.stringify(dispatch),
       });
       if (response.ok) {
         fetchDispatches();
       }
     } catch (error) {
       console.error("Error adding dispatch:", error);
+    }
+  };
+
+  const deleteDispatch = async (id: number) => {
+    try {
+      const response = await fetch(`${API_URL}/dispatches/${id}`, {
+        method: 'DELETE',
+      });
+      
+      if (response.ok) {
+        fetchDispatches();
+      } else {
+        const errorData = await response.json();
+        console.error("Error deleting dispatch:", errorData.error);
+      }
+    } catch (error) {
+      console.error("Error deleting dispatch:", error);
     }
   };
 
@@ -60,13 +83,16 @@ function App() {
       >
         <Tab eventKey="dispatches" title="Despachos">
           <DispatchForm onSubmit={addDispatch} />
-          <DispatchHistory dispatches={dispatches} />
+          <DispatchHistory dispatches={dispatches} onDelete={deleteDispatch} />
         </Tab>
         <Tab eventKey="invoicing" title="Facturación">
           <InvoicingView dispatches={dispatches} />
         </Tab>
         <Tab eventKey="admin" title="Administración">
           <AdminView />
+        </Tab>
+        <Tab eventKey="enhanced-admin" title="Administración Avanzada">
+          <EnhancedAdminView />
         </Tab>
       </Tabs>
     </Container>

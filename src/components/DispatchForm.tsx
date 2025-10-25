@@ -5,7 +5,7 @@ import { Dispatch } from '../types';
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3002/api';
 
 interface AdminData {
-  id: string;
+  id: number;
   name: string;
 }
 
@@ -20,9 +20,9 @@ const initialFormState = {
   cliente: '',
   celular: '',
   recibido: '',
-  userId: '',
-  equipmentId: '',
-  operatorId: '',
+  userId: 0,
+  equipmentId: 0,
+  operatorId: 0,
 };
 
 const materialsData = [
@@ -67,7 +67,10 @@ const DispatchForm: React.FC<Props> = ({ onSubmit }) => {
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { id, value } = event.target;
-    setFormData(prev => ({ ...prev, [id]: value }));
+    // Convertir a número si es un campo de ID
+    const numericFields = ['userId', 'equipmentId', 'operatorId'];
+    const finalValue = numericFields.includes(id) ? parseInt(value) || 0 : value;
+    setFormData(prev => ({ ...prev, [id]: finalValue }));
   };
 
   const handleMaterialSelect = (materialId: string) => {
@@ -126,21 +129,21 @@ const DispatchForm: React.FC<Props> = ({ onSubmit }) => {
             <Form.Group as={Col} controlId="userId">
               <Form.Label>Atendido por</Form.Label>
               <Form.Select value={formData.userId} onChange={handleInputChange}>
-                  <option value="">-- Seleccione --</option>
+                  <option value={0}>-- Seleccione --</option>
                   {users.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
               </Form.Select>
             </Form.Group>
             <Form.Group as={Col} controlId="equipmentId">
               <Form.Label>Equipo</Form.Label>
               <Form.Select value={formData.equipmentId} onChange={handleInputChange}>
-                  <option value="">-- Seleccione --</option>
+                  <option value={0}>-- Seleccione --</option>
                   {equipment.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
               </Form.Select>
             </Form.Group>
             <Form.Group as={Col} controlId="operatorId">
               <Form.Label>Operario</Form.Label>
               <Form.Select value={formData.operatorId} onChange={handleInputChange}>
-                  <option value="">-- Seleccione --</option>
+                  <option value={0}>-- Seleccione --</option>
                   {operators.map(o => <option key={o.id} value={o.id}>{o.name}</option>)}
               </Form.Select>
             </Form.Group>

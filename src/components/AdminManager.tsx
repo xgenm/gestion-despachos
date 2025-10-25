@@ -7,7 +7,7 @@ interface AdminManagerProps {
 }
 
 interface DataItem {
-  id: string;
+  id: number;
   name: string;
 }
 
@@ -24,21 +24,19 @@ const AdminManager: React.FC<AdminManagerProps> = ({ title, apiEndpoint }) => {
   }, [apiEndpoint]);
 
   const handleAddItem = () => {
-    const newItem = {
-      id: new Date().toISOString(),
-      name: newItemName,
-    };
     fetch(`${API_URL}/${apiEndpoint}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(newItem),
-    }).then(() => {
-      setItems(prev => [...prev, newItem]);
-      setNewItemName('');
-    });
+      body: JSON.stringify({ name: newItemName }),
+    })
+      .then(res => res.json())
+      .then(newItem => {
+        setItems(prev => [...prev, newItem]);
+        setNewItemName('');
+      });
   };
 
-  const handleDeleteItem = (id: string) => {
+  const handleDeleteItem = (id: number) => {
     fetch(`${API_URL}/${apiEndpoint}/${id}`, { method: 'DELETE' })
       .then(() => {
         setItems(prev => prev.filter(item => item.id !== id));

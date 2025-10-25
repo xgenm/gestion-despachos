@@ -1,5 +1,5 @@
 export interface Dispatch {
-  id: string;
+  id: number;
   despachoNo: string;
   fecha: string;
   hora: string;
@@ -10,11 +10,11 @@ export interface Dispatch {
   materials: { id: string; quantity: number }[];
   cliente: string;
   celular: string;
-  recibido: string; // Corregido de 'recibi'
+  recibido: string;
   total: number;
-  userId: string;
-  equipmentId: string;
-  operatorId: string;
+  userId: number;
+  equipmentId: number;
+  operatorId: number;
   // Campos opcionales que vienen de los JOINs
   userName?: string;
   equipmentName?: string;
