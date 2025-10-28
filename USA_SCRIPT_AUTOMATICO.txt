@@ -1,0 +1,160 @@
+╔═══════════════════════════════════════════════════════════════════════════════╗
+║                                                                               ║
+║                   🤖 DESPLIEGUE AUTOMÁTICO EN VERCEL                         ║
+║                    Script para Windows y Node.js                             ║
+║                                                                               ║
+╚═══════════════════════════════════════════════════════════════════════════════╝
+
+
+🚀 OPCIÓN MÁS FÁCIL: Ejecutar Script Automático
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+En Windows, simplemente ejecuta:
+
+    deploy-vercel.bat
+
+El script automáticamente:
+  ✅ Verifica requisitos previos
+  ✅ Compila el backend
+  ✅ Despliega en Vercel (te pide confirmar en navegador)
+  ✅ Pide URL del backend
+  ✅ Actualiza variables de entorno
+  ✅ Despliega frontend en Vercel
+  ✅ Muestra resumen final
+
+⏱️ TIEMPO TOTAL: 5-10 minutos
+
+
+📋 REQUISITOS ANTES DE EJECUTAR
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Vercel CLI Instalado:
+   
+   npm install -g vercel
+
+2. Vercel Autenticado:
+   
+   vercel login
+
+3. Git Configurado:
+   
+   git config --global user.name "Tu Nombre"
+   git config --global user.email "tu@email.com"
+
+4. Cambios Pusheados a GitHub:
+   
+   git add .
+   git commit -m "Tu mensaje"
+   git push origin main
+
+
+⚡ PASOS PARA EJECUTAR
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+PASO 1️⃣: Abre PowerShell o CMD en la carpeta del proyecto
+
+    cd c:\Users\cr1st\Desktop\pedro\gestion-despachos
+
+PASO 2️⃣: Ejecuta el script
+
+    deploy-vercel.bat
+
+PASO 3️⃣: Sigue las instrucciones en pantalla
+
+    - Presiona Enter cuando pida confirmar
+    - Se abrirá tu navegador con Vercel
+    - Sigue el flujo de despliegue en Vercel
+    - Copia la URL del backend cuando se despliegue
+    - Pégala en el prompt del script
+
+PASO 4️⃣: ¡Listo! Tu app estará en Vercel 🎉
+
+
+🔐 DURANTE LA EJECUCIÓN
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Cuando el script te muestre esto:
+
+    Recuerda configurar estas variables de entorno en Vercel:
+      DATABASE_URL=postgresql://...
+      JWT_SECRET=secreto_de_desarrollo_jwt_12345
+      DISABLE_AUTH=false
+      NODE_ENV=production
+
+Haz lo siguiente en Vercel Dashboard:
+  1. Click en "Environment Variables"
+  2. Agrega las 4 variables
+  3. Vuelve al script y presiona Enter
+
+
+📥 ALTERNATIVA: Si Prefieres Manual
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Si no quieres usar el script automático:
+
+  1. Lee: PROXIMOS_PASOS.txt
+  2. Sigue los pasos manualmente en Vercel Dashboard
+  3. Tiempo estimado: 15-20 minutos
+
+
+✅ VERIFICACIÓN POST-DESPLIEGUE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Una vez que el script termine, verifica que todo funciona:
+
+  1. Abre tu URL: https://[tu-app].vercel.app
+  2. Login con: admin / admin123
+  3. Crea un ticket de prueba
+  4. Verifica que aparezca en Historial
+  5. Prueba Reportes → Exporta a Excel
+  6. Prueba Generar PDF
+
+
+🆘 SI ALGO FALLA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+❌ "Command not found: deploy-vercel.bat"
+   → Abre PowerShell/CMD EN la carpeta del proyecto
+   → O ejecuta: .\deploy-vercel.bat
+
+❌ "Vercel CLI no está instalado"
+   → npm install -g vercel
+   → vercel login
+
+❌ "No autenticado en Vercel"
+   → vercel login
+   → Vuelve a ejecutar el script
+
+❌ "Error compilando backend"
+   → cd backend && npm install && npm run build
+   → Luego vuelve a ejecutar el script
+
+❌ "Script parado en variable de entorno"
+   → El script está esperando que configures variables en Vercel
+   → Abre Vercel en tu navegador y agrega las variables
+   → Vuelve al script y presiona Enter
+
+
+📝 ARCHIVOS CREADOS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+deploy-vercel.bat          → Script para Windows (RECOMENDADO)
+deploy-vercel.js           → Script para Node.js (multiplataforma)
+DEPLOY_AUTOMATICO.md       → Documentación completa de los scripts
+
+
+🎯 RESUMEN
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Este script automatiza completamente el despliegue en Vercel.
+
+Sin el script:     15-20 minutos de trabajo manual
+Con el script:     5-10 minutos, solo sigue prompts
+
+¡Tu app estará en producción en menos de 10 minutos!
+
+
+═══════════════════════════════════════════════════════════════════════════════
+              👉 Ejecuta: deploy-vercel.bat
+             Tu aplicación estará lista en minutos! 🚀
+═══════════════════════════════════════════════════════════════════════════════
