@@ -9,9 +9,13 @@
 # Database
 /backend/dispatches.db
 
-# Environment variables
+# Environment variables (pero permitir archivos de ejemplo y producción)
 .env
-.env*.local
+.env.local
+.env.*.local
+!.env.example
+!.env.production
+!backend/.env.example
 
 # Logs
 npm-debug.log*
