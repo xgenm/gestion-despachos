@@ -20,10 +20,19 @@ const AdminManager: React.FC<AdminManagerProps> = ({ title, apiEndpoint }) => {
   useEffect(() => {
     fetch(`${API_URL}/${apiEndpoint}`)
       .then(res => res.json())
-      .then(data => setItems(data.data));
+      .then(data => {
+        // Manejar ambos formatos: { data: [...] } y [...]
+        setItems(Array.isArray(data) ? data : (data.data || []));
+      })
+      .catch(err => {
+        console.error('Error fetching items:', err);
+        setItems([]);
+      });
   }, [apiEndpoint]);
 
   const handleAddItem = () => {
+    if (!newItemName.trim()) return;
+    
     fetch(`${API_URL}/${apiEndpoint}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -31,9 +40,14 @@ const AdminManager: React.FC<AdminManagerProps> = ({ title, apiEndpoint }) => {
     })
       .then(res => res.json())
       .then(newItem => {
+        // Si el nuevo item no tiene ID, asignar uno temporal
+        if (!newItem.id) {
+          newItem.id = Math.max(...items.map(i => i.id || 0), 0) + 1;
+        }
         setItems(prev => [...prev, newItem]);
         setNewItemName('');
-      });
+      })
+      .catch(err => console.error('Error adding item:', err));
   };
 
   const handleDeleteItem = (id: number) => {

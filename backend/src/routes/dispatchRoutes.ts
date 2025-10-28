@@ -3,8 +3,19 @@ import db from '../db/database';
 
 const router = Router();
 
+// Almacenamiento simulado para modo desarrollo
+let devDispatches: any[] = [];
+let nextDispatchId = 1;
+
 // GET /api/dispatches
 router.get('/', async (req, res) => {
+  const disableAuth = process.env.DISABLE_AUTH === 'true';
+  
+  if (disableAuth) {
+    // En modo desarrollo, retornar despachos simulados
+    return res.json({ data: devDispatches });
+  }
+  
   const client = await db.connect();
   
   try {
@@ -44,6 +55,35 @@ router.post('/', async (req, res) => {
     return res.status(400).json({ error: 'Tipos de datos inválidos' });
   }
   
+  const disableAuth = process.env.DISABLE_AUTH === 'true';
+  
+  if (disableAuth) {
+    // En modo desarrollo, almacenar en memoria
+    const newDispatch = {
+      id: nextDispatchId++,
+      despachoNo,
+      fecha,
+      hora,
+      camion,
+      placa,
+      color,
+      ficha,
+      materials,
+      cliente,
+      celular,
+      recibido,
+      total,
+      userId,
+      equipmentId,
+      operatorId,
+      userName: 'Usuario',
+      equipmentName: 'Equipo',
+      operatorName: 'Operario'
+    };
+    devDispatches.push(newDispatch);
+    return res.json({ id: newDispatch.id });
+  }
+  
   const client = await db.connect();
   
   try {
@@ -68,6 +108,18 @@ router.delete('/:id', async (req, res) => {
   // Validación de ID
   if (isNaN(id)) {
     return res.status(400).json({ error: 'ID inválido' });
+  }
+  
+  const disableAuth = process.env.DISABLE_AUTH === 'true';
+  
+  if (disableAuth) {
+    // En modo desarrollo, eliminar del almacenamiento simulado
+    const index = devDispatches.findIndex(d => d.id === id);
+    if (index === -1) {
+      return res.status(404).json({ error: 'Despacho no encontrado' });
+    }
+    devDispatches.splice(index, 1);
+    return res.json({ message: 'Despacho eliminado correctamente' });
   }
   
   const client = await db.connect();

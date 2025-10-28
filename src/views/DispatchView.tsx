@@ -1,17 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Container, Row, Col, Alert } from 'react-bootstrap';
-import { useAuth } from '../contexts/AuthContext';
-import AdminManager from '../components/AdminManager';
+import { Container, Row, Col } from 'react-bootstrap';
+import DispatchForm from '../components/DispatchForm';
 import DispatchFilter from '../components/DispatchFilter';
 import DispatchHistory from '../components/DispatchHistory';
-import DispatchForm from '../components/DispatchForm';
 import { Dispatch } from '../types';
-import Unauthorized from '../components/Unauthorized';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3002/api';
 
-const AdminView: React.FC = () => {
-  const { isAdmin } = useAuth();
+const DispatchView: React.FC = () => {
   const [dispatches, setDispatches] = useState<Dispatch[]>([]);
   const [filteredDispatches, setFilteredDispatches] = useState<Dispatch[]>([]);
 
@@ -45,6 +41,34 @@ const AdminView: React.FC = () => {
 
   const handleCreateDispatch = async (newDispatch: Omit<Dispatch, 'id'>) => {
     try {
+      // Guardar cliente automáticamente si no existe
+      if (newDispatch.cliente && newDispatch.cliente.trim()) {
+        try {
+          await fetch(`${API_URL}/clients`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              name: newDispatch.cliente,
+              companyId: 1 // Default company
+            }),
+          }).catch(() => {}); // Ignorar si ya existe
+        } catch (error) {
+          console.log('Cliente ya existe o error al crear');
+        }
+      }
+
+      // Guardar camión automáticamente si no existe
+      if (newDispatch.camion && newDispatch.camion.trim()) {
+        try {
+          // Crear una tabla o endpoint para camiones si no existe
+          // Por ahora solo registramos el intento
+          console.log('Registrando camión:', newDispatch.camion);
+        } catch (error) {
+          console.log('Error al registrar camión');
+        }
+      }
+
+      // Crear el despacho
       const response = await fetch(`${API_URL}/dispatches`, {
         method: 'POST',
         headers: {
@@ -85,33 +109,11 @@ const AdminView: React.FC = () => {
     }
   };
 
-  // Si no es administrador, mostrar mensaje de acceso denegado
-  if (!isAdmin) {
-    return <Unauthorized />;
-  }
-
   return (
     <Container className="mt-4">
-      <Alert variant="info">
-        <Alert.Heading>Bienvenido al Panel de Administración</Alert.Heading>
-        <p>Aquí puedes gestionar todos los aspectos del sistema de despachos.</p>
-      </Alert>
-      
       <Row>
         <Col md={12}>
           <DispatchForm onSubmit={handleCreateDispatch} />
-        </Col>
-      </Row>
-      
-      <Row className="mt-4">
-        <Col md={4}>
-          <AdminManager title="Usuarios" apiEndpoint="users" />
-        </Col>
-        <Col md={4}>
-          <AdminManager title="Equipos" apiEndpoint="equipment" />
-        </Col>
-        <Col md={4}>
-          <AdminManager title="Operarios" apiEndpoint="operators" />
         </Col>
       </Row>
       
@@ -125,4 +127,4 @@ const AdminView: React.FC = () => {
   );
 };
 
-export default AdminView;
+export default DispatchView;

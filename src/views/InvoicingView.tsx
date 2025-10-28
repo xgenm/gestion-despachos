@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { Container, Card, Form, Button, Table, Row, Col } from 'react-bootstrap';
 import { Dispatch } from '../types';
 import jsPDF from 'jspdf';
@@ -12,21 +12,39 @@ interface Company {
   email?: string;
 }
 
-interface Props {
-  dispatches: Dispatch[];
-}
-
-const InvoicingView: React.FC<Props> = ({ dispatches }) => {
+const InvoicingView: React.FC = () => {
+  const [dispatches, setDispatches] = useState<Dispatch[]>([]);
   const [companies, setCompanies] = useState<Company[]>([]);
   const [selectedClient, setSelectedClient] = useState<string>('');
   const [selectedCompany, setSelectedCompany] = useState<number>(0);
   const [selectedDispatchIds, setSelectedDispatchIds] = useState<number[]>([]);
 
+  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3002/api';
+
+  // Cargar despachos desde el backend
+  const fetchDispatches = useCallback(async () => {
+    try {
+      const response = await fetch(`${API_URL}/dispatches`);
+      const data = await response.json();
+      const formattedData = data.data.map((d: any) => ({
+        ...d, 
+        materials: typeof d.materials === 'string' ? JSON.parse(d.materials) : d.materials,
+        id: Number(d.id),
+        userId: Number(d.userId),
+        equipmentId: Number(d.equipmentId),
+        operatorId: Number(d.operatorId),
+        total: Number(d.total)
+      }));
+      setDispatches(formattedData);
+    } catch (error) {
+      console.error("Error fetching dispatches:", error);
+    }
+  }, [API_URL]);
+
   // Cargar empresas desde el backend
   useEffect(() => {
     const fetchCompanies = async () => {
       try {
-        const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3002/api';
         const response = await fetch(`${API_URL}/companies`);
         const data = await response.json();
         setCompanies(data.data || []);
@@ -36,7 +54,8 @@ const InvoicingView: React.FC<Props> = ({ dispatches }) => {
     };
 
     fetchCompanies();
-  }, []);
+    fetchDispatches();
+  }, [API_URL, fetchDispatches]);
 
   const clients = useMemo(() => Array.from(new Set(dispatches.map(d => d.cliente))), [dispatches]);
 
@@ -90,84 +109,100 @@ const InvoicingView: React.FC<Props> = ({ dispatches }) => {
   };
 
   return (
-    <Card className="mt-4">
-      <Card.Body>
-        <Card.Title>Generación de Facturas</Card.Title>
-        <Row className="mb-3">
-          <Col md={6}>
-            <Form.Group controlId="clientSelector">
-              <Form.Label>Seleccione un Cliente</Form.Label>
-              <Form.Select onChange={(e) => { setSelectedClient(e.target.value); setSelectedDispatchIds([]); }} value={selectedClient}>
-                <option value="">-- Seleccione --</option>
-                {clients.map(client => (
-                  <option key={client} value={client}>{client}</option>
-                ))}
-              </Form.Select>
-            </Form.Group>
-          </Col>
-          <Col md={6}>
-            <Form.Group controlId="companySelector">
-              <Form.Label>Seleccione la Empresa que Factura</Form.Label>
-              <Form.Select 
-                onChange={(e) => setSelectedCompany(Number(e.target.value))} 
-                value={selectedCompany}
-                disabled={companies.length === 0}
-              >
-                <option value={0}>-- Seleccione una Empresa --</option>
-                {companies.map(company => (
-                  <option key={company.id} value={company.id}>{company.name}</option>
-                ))}
-              </Form.Select>
-              {companies.length === 0 && (
-                <Form.Text className="text-muted">
-                  No hay empresas disponibles. Agregue empresas en la sección de Administración.
-                </Form.Text>
-              )}
-            </Form.Group>
-          </Col>
-        </Row>
+    <Container>
+      <Card className="mt-4">
+        <Card.Body>
+          <Card.Title>Generación de Facturas</Card.Title>
+          <Row className="mb-3">
+            <Col md={6}>
+              <Form.Group controlId="clientSelector">
+                <Form.Label>Seleccione un Cliente</Form.Label>
+                <Form.Select onChange={(e) => { setSelectedClient(e.target.value); setSelectedDispatchIds([]); }} value={selectedClient}>
+                  <option value="">-- Seleccione --</option>
+                  {clients.map(client => (
+                    <option key={client} value={client}>{client}</option>
+                  ))}
+                </Form.Select>
+              </Form.Group>
+            </Col>
+            <Col md={6}>
+              <Form.Group controlId="companySelector">
+                <Form.Label>Seleccione la Empresa que Factura</Form.Label>
+                <Form.Select 
+                  onChange={(e) => setSelectedCompany(Number(e.target.value))} 
+                  value={selectedCompany}
+                  disabled={companies.length === 0}
+                >
+                  <option value={0}>-- Seleccione una Empresa --</option>
+                  {companies.map(company => (
+                    <option key={company.id} value={company.id}>{company.name}</option>
+                  ))}
+                </Form.Select>
+                {companies.length === 0 && (
+                  <Form.Text className="text-muted">
+                    No hay empresas disponibles. Agregue empresas en la sección de Administración.
+                  </Form.Text>
+                )}
+              </Form.Group>
+            </Col>
+          </Row>
 
-        {selectedClient && (
-          <>
-            <h5>Despachos de: <strong>{selectedClient}</strong></h5>
-            <Table striped bordered hover responsive size="sm">
-              <thead>
-                <tr>
-                  <th style={{ width: '5%' }}>Sel.</th>
-                  <th>Nº Despacho</th>
-                  <th>Fecha</th>
-                  <th>Total (RD$)</th>
-                </tr>
-              </thead>
-              <tbody>
-                {clientDispatches.map(dispatch => (
-                  <tr key={dispatch.id}>
-                    <td className="text-center">
-                      <Form.Check 
-                        type="checkbox" 
-                        checked={selectedDispatchIds.includes(dispatch.id)}
-                        onChange={() => handleCheckboxChange(dispatch.id)}
-                      />
-                    </td>
-                    <td>{dispatch.despachoNo}</td>
-                    <td>{new Date(dispatch.fecha).toLocaleDateString()}</td>
-                    <td>{dispatch.total.toFixed(2)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </Table>
-            <Button 
-              variant="danger"
-              onClick={handleGeneratePDF} 
-              disabled={selectedDispatchIds.length === 0 || selectedCompany === 0}
-            >
-              <i className="bi bi-file-earmark-pdf me-2"></i>
-              Generar Factura PDF
-            </Button>
-          </>
-        )}
-      </Card.Body>
-    </Card>
+          {selectedClient && (
+            <>
+              <h5>Despachos de: <strong>{selectedClient}</strong></h5>
+              {clientDispatches.length > 0 ? (
+                <Table striped bordered hover responsive size="sm">
+                  <thead>
+                    <tr>
+                      <th style={{ width: '5%' }}>Sel.</th>
+                      <th>Nº Despacho</th>
+                      <th>Fecha</th>
+                      <th>Total (RD$)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {clientDispatches.map(dispatch => (
+                      <tr key={dispatch.id}>
+                        <td className="text-center">
+                          <Form.Check 
+                            type="checkbox" 
+                            checked={selectedDispatchIds.includes(dispatch.id)}
+                            onChange={() => handleCheckboxChange(dispatch.id)}
+                          />
+                        </td>
+                        <td>{dispatch.despachoNo}</td>
+                        <td>{new Date(dispatch.fecha).toLocaleDateString()}</td>
+                        <td>{dispatch.total.toFixed(2)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </Table>
+              ) : (
+                <p>No hay despachos registrados para este cliente.</p>
+              )}
+              <Button 
+                variant="danger"
+                onClick={handleGeneratePDF} 
+                disabled={selectedDispatchIds.length === 0 || selectedCompany === 0}
+              >
+                <i className="bi bi-file-earmark-pdf me-2"></i>
+                Generar Factura PDF
+              </Button>
+            </>
+          )}
+          
+          {!selectedClient && (
+            <div>
+              {clients.length > 0 ? (
+                <p>Seleccione un cliente del menú desplegable para ver sus despachos y generar una factura.</p>
+              ) : (
+                <p>No hay clientes con despachos registrados. Cree algunos despachos primero.</p>
+              )}
+            </div>
+          )}
+        </Card.Body>
+      </Card>
+    </Container>
   );
 };
 

@@ -1,23 +1,45 @@
 const { Pool } = require('pg');
 const bcrypt = require('bcryptjs');
 
-// Configuración de la base de datos para desarrollo local
-const pool = new Pool({
-  user: 'postgres',
-  host: 'localhost',
-  database: 'gestion_despachos',
-  password: 'postgres',
-  port: 5432,
+// Pool para conectar a PostgreSQL (default)
+const initialPool = new Pool({
+  connectionString: 'postgresql://gestion_despachos_user:DN0eX71qsu0L3TVYxiPklmB2pVaNWPpi@dpg-d40hvrs9c44c73bbfna0-a.oregon-postgres.render.com/postgres?sslmode=require',
+  ssl: true
+});
+
+// Pool para conectar a gestion_despachos
+const dbPool = new Pool({
+  connectionString: 'postgresql://gestion_despachos_user:DN0eX71qsu0L3TVYxiPklmB2pVaNWPpi@dpg-d40hvrs9c44c73bbfna0-a.oregon-postgres.render.com/gestion_despachos?sslmode=require',
+  ssl: true
 });
 
 async function initDatabase() {
   let client;
   
   try {
-    client = await pool.connect();
-    console.log('Conectado a la base de datos');
+    // Conectar a postgres para crear la BD
+    client = await initialPool.connect();
+    console.log('Conectado a PostgreSQL');
     
-    // Crear tablas si no existen
+    // Crear la base de datos si no existe
+    try {
+      await client.query('CREATE DATABASE gestion_despachos');
+      console.log('Base de datos gestion_despachos creada');
+    } catch (err) {
+      if (err.code === '42P04') {
+        console.log('Base de datos gestion_despachos ya existe');
+      } else {
+        throw err;
+      }
+    }
+    
+    client.release();
+    
+    // Ahora conectar a la BD gestion_despachos
+    client = await dbPool.connect();
+    console.log('Conectado a gestion_despachos');
+    
+    // Crear tablas
     await client.query(`
       CREATE TABLE IF NOT EXISTS dispatches (
         id SERIAL PRIMARY KEY,
@@ -42,7 +64,10 @@ async function initDatabase() {
     await client.query(`
       CREATE TABLE IF NOT EXISTS users (
         id SERIAL PRIMARY KEY,
-        name TEXT NOT NULL UNIQUE
+        username VARCHAR(50) UNIQUE NOT NULL,
+        password VARCHAR(255) NOT NULL,
+        name TEXT,
+        role VARCHAR(50) DEFAULT 'employee'
       )
     `);
     
@@ -78,23 +103,20 @@ async function initDatabase() {
       )
     `);
     
-    await client.query(`
-      CREATE TABLE IF NOT EXISTS admins (
-        id SERIAL PRIMARY KEY,
-        username VARCHAR(50) UNIQUE NOT NULL,
-        password VARCHAR(255) NOT NULL
-      )
-    `);
-    
     console.log('Tablas creadas exitosamente');
     
-    // Insertar datos de ejemplo si no existen
-    const userCount = await client.query('SELECT COUNT(*) FROM users');
-    if (parseInt(userCount.rows[0].count) === 0) {
-      await client.query("INSERT INTO users (name) VALUES ('Empresa Ejemplo')");
-      console.log('Datos de ejemplo insertados en users');
+    // Insertar usuario admin si no existe
+    const adminCount = await client.query("SELECT COUNT(*) FROM users WHERE username = 'admin'");
+    if (parseInt(adminCount.rows[0].count) === 0) {
+      const hashedPassword = await bcrypt.hash('admin123', 10);
+      await client.query(
+        'INSERT INTO users (username, password, name, role) VALUES ($1, $2, $3, $4)',
+        ['admin', hashedPassword, 'Administrador', 'admin']
+      );
+      console.log('Usuario admin creado');
     }
     
+    // Insertar datos de ejemplo si no existen
     const equipmentCount = await client.query('SELECT COUNT(*) FROM equipment');
     if (parseInt(equipmentCount.rows[0].count) === 0) {
       await client.query("INSERT INTO equipment (name) VALUES ('Volqueta 1')");
@@ -116,7 +138,8 @@ async function initDatabase() {
     if (client) {
       client.release();
     }
-    await pool.end();
+    await initialPool.end();
+    await dbPool.end();
   }
 }
 

@@ -3,8 +3,21 @@ import db from '../db/database';
 
 const router = Router();
 
+// Almacenamiento simulado para modo desarrollo
+let devOperators: Array<{ id: number; name: string }> = [
+  { id: 1, name: 'Operario 1' },
+  { id: 2, name: 'Operario 2' }
+];
+let nextOperatorId = 3;
+
 // GET all operators
 router.get('/', async (req, res) => {
+  const disableAuth = process.env.DISABLE_AUTH === 'true';
+  
+  if (disableAuth) {
+    return res.json({ data: devOperators });
+  }
+  
   const client = await db.connect();
   
   try {
@@ -25,6 +38,15 @@ router.post('/', async (req, res) => {
   // Validación básica
   if (!name || name.trim() === '') {
     return res.status(400).json({ error: 'Nombre de operario es requerido' });
+  }
+  
+  const disableAuth = process.env.DISABLE_AUTH === 'true';
+  
+  if (disableAuth) {
+    // En modo desarrollo, agregar a lista simulada
+    const newOperator = { id: nextOperatorId++, name: name.trim() };
+    devOperators.push(newOperator);
+    return res.json(newOperator);
   }
   
   const client = await db.connect();
@@ -50,6 +72,18 @@ router.delete('/:id', async (req, res) => {
   // Validación de ID
   if (isNaN(id)) {
     return res.status(400).json({ error: 'ID inválido' });
+  }
+  
+  const disableAuth = process.env.DISABLE_AUTH === 'true';
+  
+  if (disableAuth) {
+    // En modo desarrollo, eliminar de lista simulada
+    const index = devOperators.findIndex(o => o.id === id);
+    if (index === -1) {
+      return res.status(404).json({ error: 'Operario no encontrado' });
+    }
+    devOperators.splice(index, 1);
+    return res.json({ message: 'Operario eliminado correctamente' });
   }
   
   const client = await db.connect();

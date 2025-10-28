@@ -4,14 +4,31 @@ import { UserModel } from '../models/User';
 
 const router = Router();
 
+// Usuario de prueba para desarrollo
+const devUser = {
+  id: 1,
+  username: 'admin',
+  password: 'admin123',
+  role: 'admin' // Por defecto, el usuario de desarrollo es admin
+};
+
+// Almacenamiento simulado de usuarios en desarrollo
+let devUsers: any[] = [devUser];
+let nextDevUserId = 2;
+
 // Registro de administrador (solo para crear el primer usuario)
 router.post('/register', async (req, res) => {
   try {
-    const { username, password } = req.body;
+    const { username, password, role = 'employee' } = req.body;
     
     // Validación básica
     if (!username || !password) {
       return res.status(400).json({ error: 'Nombre de usuario y contraseña son requeridos' });
+    }
+    
+    // Validar rol
+    if (role !== 'admin' && role !== 'employee') {
+      return res.status(400).json({ error: 'Rol inválido. Debe ser "admin" o "employee"' });
     }
     
     // Verificar si la autenticación está deshabilitada para desarrollo
@@ -19,12 +36,19 @@ router.post('/register', async (req, res) => {
     
     if (disableAuth) {
       // En modo desarrollo sin base de datos, crear un usuario simulado
-      const user = { id: 1, username, password };
+      // Verificar si el usuario ya existe
+      const existingUser = devUsers.find(u => u.username === username);
+      if (existingUser) {
+        return res.status(400).json({ error: 'El nombre de usuario ya está en uso' });
+      }
+      
+      const user = { id: nextDevUserId++, username, password, role };
+      devUsers.push(user);
       
       // Generar token
       const secret = process.env.JWT_SECRET || 'secreto_por_defecto';
       const token = jwt.sign(
-        { id: user.id, username: user.username },
+        { id: user.id, username: user.username, role: user.role },
         secret,
         { expiresIn: '24h' }
       );
@@ -34,24 +58,25 @@ router.post('/register', async (req, res) => {
         token,
         user: {
           id: user.id,
-          username: user.username
+          username: user.username,
+          role: user.role
         }
       });
     }
     
-    // Verificar si el usuario ya existe
+    // Verificar si el usuario ya existe (en modo con BD real)
     const existingUser = await UserModel.findByUsername(username);
     if (existingUser) {
       return res.status(400).json({ error: 'El nombre de usuario ya está en uso' });
     }
     
     // Crear nuevo usuario
-    const user = await UserModel.createUser(username, password);
+    const user = await UserModel.createUser(username, password, role);
     
     // Generar token
     const secret = process.env.JWT_SECRET || 'secreto_por_defecto';
     const token = jwt.sign(
-      { id: user.id, username: user.username },
+      { id: user.id, username: user.username, role: user.role },
       secret,
       { expiresIn: '24h' }
     );
@@ -61,11 +86,65 @@ router.post('/register', async (req, res) => {
       token,
       user: {
         id: user.id,
-        username: user.username
+        username: user.username,
+        role: user.role
       }
     });
   } catch (error) {
     console.error('Error al registrar usuario:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
+// Obtener lista de usuarios (para modo desarrollo)
+router.get('/users', async (req, res) => {
+  try {
+    const disableAuth = process.env.DISABLE_AUTH === 'true';
+    
+    if (disableAuth) {
+      // En modo desarrollo, retornar lista de usuarios simulados
+      const users = devUsers.map(u => ({
+        id: u.id,
+        username: u.username,
+        role: u.role
+      }));
+      return res.json(users);
+    }
+    
+    // En modo con BD real (no implementado aún)
+    res.status(501).json({ error: 'Endpoint no implementado para modo BD real' });
+  } catch (error) {
+    console.error('Error al obtener usuarios:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
+// Eliminar usuario
+router.delete('/users/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const disableAuth = process.env.DISABLE_AUTH === 'true';
+    
+    if (disableAuth) {
+      // En modo desarrollo, eliminar usuario simulado
+      const userIndex = devUsers.findIndex(u => u.id === parseInt(id));
+      if (userIndex === -1) {
+        return res.status(404).json({ error: 'Usuario no encontrado' });
+      }
+      
+      // No permitir eliminar al admin principal
+      if (devUsers[userIndex].id === 1) {
+        return res.status(400).json({ error: 'No se puede eliminar el usuario administrador principal' });
+      }
+      
+      devUsers.splice(userIndex, 1);
+      return res.json({ message: 'Usuario eliminado exitosamente' });
+    }
+    
+    // En modo con BD real (no implementado aún)
+    res.status(501).json({ error: 'Endpoint no implementado para modo BD real' });
+  } catch (error) {
+    console.error('Error al eliminar usuario:', error);
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
@@ -84,25 +163,30 @@ router.post('/login', async (req, res) => {
     const disableAuth = process.env.DISABLE_AUTH === 'true';
     
     if (disableAuth) {
-      // En modo desarrollo sin base de datos, permitir cualquier login
-      const user = { id: 1, username };
+      // En modo desarrollo sin base de datos, buscar usuario en la lista de desarrollo
+      const user = devUsers.find(u => u.username === username);
       
-      // Generar token
-      const secret = process.env.JWT_SECRET || 'secreto_por_defecto';
-      const token = jwt.sign(
-        { id: user.id, username: user.username },
-        secret,
-        { expiresIn: '24h' }
-      );
-      
-      return res.json({
-        message: 'Inicio de sesión exitoso (modo desarrollo)',
-        token,
-        user: {
-          id: user.id,
-          username: user.username
-        }
-      });
+      if (user && user.password === password) {
+        // Generar token
+        const secret = process.env.JWT_SECRET || 'secreto_por_defecto';
+        const token = jwt.sign(
+          { id: user.id, username: user.username, role: user.role },
+          secret,
+          { expiresIn: '24h' }
+        );
+        
+        return res.json({
+          message: 'Inicio de sesión exitoso (modo desarrollo)',
+          token,
+          user: {
+            id: user.id,
+            username: user.username,
+            role: user.role
+          }
+        });
+      } else {
+        return res.status(401).json({ error: 'Credenciales inválidas' });
+      }
     }
     
     // Buscar usuario
@@ -120,7 +204,7 @@ router.post('/login', async (req, res) => {
     // Generar token
     const secret = process.env.JWT_SECRET || 'secreto_por_defecto';
     const token = jwt.sign(
-      { id: user.id, username: user.username },
+      { id: user.id, username: user.username, role: user.role },
       secret,
       { expiresIn: '24h' }
     );
@@ -130,7 +214,8 @@ router.post('/login', async (req, res) => {
       token,
       user: {
         id: user.id,
-        username: user.username
+        username: user.username,
+        role: user.role
       }
     });
   } catch (error) {

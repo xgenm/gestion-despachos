@@ -1,15 +1,14 @@
 import React, { useState } from 'react';
 import { Form, Button, Container, Row, Col, Card, Alert } from 'react-bootstrap';
+import { useAuth } from '../contexts/AuthContext';
 
-interface LoginProps {
-  onLogin: (token: string) => void;
-}
-
-const Login: React.FC<LoginProps> = ({ onLogin }) => {
+const Login: React.FC = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  
+  const { login } = useAuth();
 
   const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3002/api';
 
@@ -30,9 +29,8 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
       const data = await response.json();
 
       if (response.ok) {
-        // Guardar token en localStorage
-        localStorage.setItem('token', data.token);
-        onLogin(data.token);
+        // Guardar token y datos de usuario en el contexto
+        login(data.token, data.user);
       } else {
         setError(data.error || 'Error al iniciar sesión');
       }

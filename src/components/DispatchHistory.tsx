@@ -3,6 +3,7 @@ import { Table, Card, Button } from 'react-bootstrap';
 import { Dispatch } from '../types';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
+import jsPDF from 'jspdf';
 import DispatchDetailModal from './DispatchDetailModal';
 
 interface Props {
@@ -170,6 +171,77 @@ const DispatchHistory: React.FC<Props> = ({ dispatches, onDelete }) => {
     setShowModal(true);
   };
 
+  const handlePrintPDF = (dispatch: Dispatch) => {
+    const doc = new jsPDF();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    let yPosition = 20;
+
+    // Encabezado
+    doc.setFontSize(16);
+    doc.text('Mina "SALUDALSA"', 105, yPosition, { align: 'center' });
+    yPosition += 10;
+    doc.setFontSize(12);
+    doc.text('Código 6700', 105, yPosition, { align: 'center' });
+    yPosition += 10;
+    doc.setFontSize(14);
+    doc.text(`Despacho #${dispatch.despachoNo}`, 105, yPosition, { align: 'center' });
+    yPosition += 15;
+
+    // Información del despacho
+    doc.setFontSize(10);
+    const info = [
+      `Fecha: ${new Date(dispatch.fecha).toLocaleDateString()}`,
+      `Hora: ${dispatch.hora}`,
+      `Cliente: ${dispatch.cliente}`,
+      `Recibido por: ${dispatch.recibido}`,
+      `Camión: ${dispatch.camion || 'No especificado'}`,
+      `Placa: ${dispatch.placa || 'No especificado'}`,
+      `Color: ${dispatch.color || 'No especificado'}`,
+      `Ficha: ${dispatch.ficha || 'No especificado'}`
+    ];
+    
+    info.forEach(line => {
+      doc.text(line, 20, yPosition);
+      yPosition += 7;
+    });
+
+    yPosition += 5;
+
+    // Tabla de materiales
+    const tableData = dispatch.materials.map(material => [
+      getMaterialName(material.id),
+      material.quantity.toString(),
+      `RD$ ${getMaterialPrice(material.id).toFixed(2)}`,
+      `RD$ ${(getMaterialPrice(material.id) * material.quantity).toFixed(2)}`
+    ]);
+
+    tableData.push([
+      'TOTAL',
+      '',
+      '',
+      `RD$ ${dispatch.total.toFixed(2)}`
+    ]);
+
+    (doc as any).autoTable({
+      head: [['Material', 'Cantidad (m³)', 'Precio Unitario', 'Total']],
+      body: tableData,
+      startY: yPosition,
+      theme: 'grid',
+      margin: { left: 20, right: 20 },
+      didDrawPage: (data: any) => {
+        if (data.pageCount > 1) {
+          const pageSize = doc.internal.pageSize;
+          const pageHeight = pageSize.getHeight();
+          doc.setFontSize(10);
+          doc.text(`Página ${data.pageNumber}`, pageSize.getWidth() / 2, pageHeight - 10, { align: 'center' });
+        }
+      }
+    });
+
+    // Guardar PDF
+    doc.save(`Despacho_${dispatch.despachoNo}.pdf`);
+  };
+
   const handlePrint = (dispatch: Dispatch) => {
     // Crear una ventana de impresión
     const printWindow = window.open('', '_blank');
@@ -286,15 +358,18 @@ const DispatchHistory: React.FC<Props> = ({ dispatches, onDelete }) => {
                 <td>{dispatch.cliente}</td>
                 <td>{dispatch.placa}</td>
                 <td>{dispatch.total.toFixed(2)}</td>
-                <td>
-                  <Button variant="info" size="sm" className="me-2" onClick={() => handleViewDetails(dispatch)}>
-                    <i className="bi bi-eye"></i>
+                <td style={{ whiteSpace: 'nowrap' }}>
+                  <Button variant="primary" size="sm" className="me-1" title="Ver detalles" onClick={() => handleViewDetails(dispatch)}>
+                    Ver
                   </Button>
-                  <Button variant="secondary" size="sm" className="me-2" onClick={() => handlePrint(dispatch)}>
-                    <i className="bi bi-printer"></i>
+                  <Button variant="warning" size="sm" className="me-1" title="Imprimir" onClick={() => handlePrint(dispatch)}>
+                    Imprimir
+                  </Button>
+                  <Button variant="info" size="sm" className="me-1" title="Descargar PDF" onClick={() => handlePrintPDF(dispatch)}>
+                    PDF
                   </Button>
                   <Button variant="danger" size="sm" onClick={() => handleDelete(dispatch.id)}>
-                    <i className="bi bi-trash"></i>
+                    Eliminar
                   </Button>
                 </td>
               </tr>

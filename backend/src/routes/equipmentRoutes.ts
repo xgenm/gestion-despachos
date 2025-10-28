@@ -3,8 +3,21 @@ import db from '../db/database';
 
 const router = Router();
 
+// Almacenamiento simulado para modo desarrollo
+let devEquipment: Array<{ id: number; name: string }> = [
+  { id: 1, name: 'Equipo 1' },
+  { id: 2, name: 'Equipo 2' }
+];
+let nextEquipmentId = 3;
+
 // GET all equipment
 router.get('/', async (req, res) => {
+  const disableAuth = process.env.DISABLE_AUTH === 'true';
+  
+  if (disableAuth) {
+    return res.json({ data: devEquipment });
+  }
+  
   const client = await db.connect();
   
   try {
@@ -25,6 +38,15 @@ router.post('/', async (req, res) => {
   // Validación básica
   if (!name || name.trim() === '') {
     return res.status(400).json({ error: 'Nombre de equipo es requerido' });
+  }
+  
+  const disableAuth = process.env.DISABLE_AUTH === 'true';
+  
+  if (disableAuth) {
+    // En modo desarrollo, agregar a lista simulada
+    const newEquipment = { id: nextEquipmentId++, name: name.trim() };
+    devEquipment.push(newEquipment);
+    return res.json(newEquipment);
   }
   
   const client = await db.connect();
@@ -50,6 +72,18 @@ router.delete('/:id', async (req, res) => {
   // Validación de ID
   if (isNaN(id)) {
     return res.status(400).json({ error: 'ID inválido' });
+  }
+  
+  const disableAuth = process.env.DISABLE_AUTH === 'true';
+  
+  if (disableAuth) {
+    // En modo desarrollo, eliminar de lista simulada
+    const index = devEquipment.findIndex(e => e.id === id);
+    if (index === -1) {
+      return res.status(404).json({ error: 'Equipo no encontrado' });
+    }
+    devEquipment.splice(index, 1);
+    return res.json({ message: 'Equipo eliminado correctamente' });
   }
   
   const client = await db.connect();
