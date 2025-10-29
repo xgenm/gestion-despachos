@@ -68,12 +68,18 @@ app.get('/', (req, res) => {
   res.send('Backend del sistema de despachos funcionando!');
 });
 
-app.listen(port, () => {
-  console.log(`Backend escuchando en http://localhost:${port}`);
-});
+// Solo iniciar el servidor en desarrollo local
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(port, () => {
+    console.log(`Backend escuchando en http://localhost:${port}`);
+  });
+}
 
 // Manejo de cierre de la aplicación
 process.on('SIGINT', () => {
   console.log('Cerrando servidor...');
   process.exit(0);
 });
+
+// Exportar para Vercel
+export default app;
