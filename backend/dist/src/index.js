@@ -1,4 +1,13 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -27,6 +36,30 @@ app.use((0, cors_1.default)({
     allowedHeaders: '*'
 }));
 app.use(express_1.default.json());
+// Endpoint de prueba de conexión a BD
+app.get('/api/test-db', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { Pool } = require('pg');
+        const pool = new Pool({
+            connectionString: process.env.DATABASE_URL,
+            ssl: { rejectUnauthorized: false }
+        });
+        const result = yield pool.query('SELECT COUNT(*) as count FROM users');
+        yield pool.end();
+        res.json({
+            message: 'Conexión exitosa a PostgreSQL',
+            userCount: result.rows[0].count,
+            env: {
+                hasDatabaseUrl: !!process.env.DATABASE_URL,
+                hasJwtSecret: !!process.env.JWT_SECRET,
+                nodeEnv: process.env.NODE_ENV
+            }
+        });
+    }
+    catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}));
 // Endpoint de prueba
 app.get('/api/test', (req, res) => {
     res.json({ message: 'API funcionando correctamente' });

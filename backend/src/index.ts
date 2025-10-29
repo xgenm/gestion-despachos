@@ -28,6 +28,30 @@ app.use(cors({
 
 app.use(express.json());
 
+// Endpoint de prueba de conexión a BD
+app.get('/api/test-db', async (req, res) => {
+  try {
+    const { Pool } = require('pg');
+    const pool = new Pool({
+      connectionString: process.env.DATABASE_URL,
+      ssl: { rejectUnauthorized: false }
+    });
+    const result = await pool.query('SELECT COUNT(*) as count FROM users');
+    await pool.end();
+    res.json({ 
+      message: 'Conexión exitosa a PostgreSQL', 
+      userCount: result.rows[0].count,
+      env: {
+        hasDatabaseUrl: !!process.env.DATABASE_URL,
+        hasJwtSecret: !!process.env.JWT_SECRET,
+        nodeEnv: process.env.NODE_ENV
+      }
+    });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Endpoint de prueba
 app.get('/api/test', (req, res) => {
   res.json({ message: 'API funcionando correctamente' });
