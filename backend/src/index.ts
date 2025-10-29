@@ -19,19 +19,30 @@ const app = express();
 const port = process.env.PORT || 3002;
 
 // Configuración de CORS para desarrollo y producción
-app.use(cors({
-  origin: [
-    'http://localhost:3000', 
-    'http://localhost:3001', 
-    'http://127.0.0.1:3000', 
-    'http://127.0.0.1:3001',
-    'https://gestion-despachos-2sls.vercel.app',
-    'https://gestion-despachos.vercel.app'
-  ],
+const corsOptions = {
+  origin: function (origin: string | undefined, callback: Function) {
+    const allowedOrigins = [
+      'http://localhost:3000',
+      'http://localhost:3001',
+      'http://127.0.0.1:3000',
+      'http://127.0.0.1:3001',
+      'https://gestion-despachos-2sls.vercel.app',
+      'https://gestion-despachos.vercel.app'
+    ];
+    
+    // En producción, permitir cualquier origen
+    if (process.env.NODE_ENV === 'production' || !origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(null, true); // Permitir todos en desarrollo
+    }
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'Authorization']
-}));
+};
+
+app.use(cors(corsOptions));
 
 app.use(express.json());
 
