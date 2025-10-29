@@ -13,7 +13,12 @@ const DispatchView: React.FC = () => {
 
   const fetchDispatches = useCallback(async () => {
     try {
-      const response = await fetch(`${API_URL}/dispatches`);
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_URL}/dispatches`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       const data = await response.json();
       const formattedData = data.data.map((d: any) => ({
         ...d, 
@@ -69,10 +74,12 @@ const DispatchView: React.FC = () => {
       }
 
       // Crear el despacho
+      const token = localStorage.getItem('token');
       const response = await fetch(`${API_URL}/dispatches`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
           ...newDispatch,
@@ -94,8 +101,12 @@ const DispatchView: React.FC = () => {
 
   const deleteDispatch = async (id: number) => {
     try {
+      const token = localStorage.getItem('token');
       const response = await fetch(`${API_URL}/dispatches/${id}`, {
         method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
       });
       
       if (response.ok) {
