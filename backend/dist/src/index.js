@@ -67,6 +67,19 @@ app.get('/api/test-db', (req, res) => __awaiter(void 0, void 0, void 0, function
 app.get('/api/test', (req, res) => {
     res.json({ message: 'API funcionando correctamente' });
 });
+// Endpoint de test de login con debugging
+app.post('/api/test-login', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { username, password } = req.body;
+        res.json({
+            received: { username, password, hasBody: !!req.body },
+            headers: req.headers['content-type']
+        });
+    }
+    catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}));
 // Rutas públicas (sin autenticación)
 app.use('/api/auth', authRoutes_1.default);
 // Rutas protegidas (requieren autenticación)

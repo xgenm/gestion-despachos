@@ -62,6 +62,20 @@ app.get('/api/test', (req, res) => {
   res.json({ message: 'API funcionando correctamente' });
 });
 
+// Endpoint de test de login con debugging
+app.post('/api/test-login', async (req, res) => {
+  try {
+    const { username, password } = req.body;
+    
+    res.json({
+      received: { username, password, hasBody: !!req.body },
+      headers: req.headers['content-type']
+    });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Rutas públicas (sin autenticación)
 app.use('/api/auth', authRoutes);
 
