@@ -44,11 +44,14 @@ app.get('/api/test-db', (req, res) => __awaiter(void 0, void 0, void 0, function
             connectionString: process.env.DATABASE_URL,
             ssl: { rejectUnauthorized: false }
         });
-        const result = yield pool.query('SELECT COUNT(*) as count FROM users');
+        // Obtener información del usuario admin
+        const userResult = yield pool.query('SELECT id, username, role, LEFT(password, 20) as password_preview FROM users WHERE username = \'admin\'');
+        const countResult = yield pool.query('SELECT COUNT(*) as count FROM users');
         yield pool.end();
         res.json({
             message: 'Conexión exitosa a PostgreSQL',
-            userCount: result.rows[0].count,
+            userCount: countResult.rows[0].count,
+            adminUser: userResult.rows[0],
             env: {
                 hasDatabaseUrl: !!process.env.DATABASE_URL,
                 hasJwtSecret: !!process.env.JWT_SECRET,
