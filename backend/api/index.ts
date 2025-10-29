@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 
@@ -26,7 +26,7 @@ app.use(cors({
 app.use(express.json());
 
 // Endpoint de prueba
-app.get('/api/test', (req, res) => {
+app.get('/api/test', (req: Request, res: Response) => {
   res.json({ message: 'API funcionando correctamente' });
 });
 
@@ -43,8 +43,9 @@ app.use('/api/operators', checkRole('admin'), operatorRoutes);
 app.use('/api/companies', checkRole('admin'), companyRoutes);
 app.use('/api/clients', clientRoutes);
 
-app.get('/', (req, res) => {
+app.get('/', (req: Request, res: Response) => {
   res.send('Backend del sistema de despachos funcionando!');
 });
 
+// Exportar como Serverless Function para Vercel
 export default app;
