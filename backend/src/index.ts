@@ -18,9 +18,16 @@ import checkRole from './middleware/roleMiddleware';
 const app = express();
 const port = process.env.PORT || 3002;
 
-// Configuración de CORS más permisiva para desarrollo
+// Configuración de CORS para desarrollo y producción
 app.use(cors({
-  origin: ['http://localhost:3000', 'http://localhost:3001', 'http://127.0.0.1:3000', 'http://127.0.0.1:3001'],
+  origin: [
+    'http://localhost:3000', 
+    'http://localhost:3001', 
+    'http://127.0.0.1:3000', 
+    'http://127.0.0.1:3001',
+    'https://gestion-despachos-2sls.vercel.app',
+    'https://gestion-despachos.vercel.app'
+  ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'Authorization']
