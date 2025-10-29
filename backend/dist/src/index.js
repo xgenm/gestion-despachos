@@ -19,30 +19,13 @@ const authMiddleware_1 = __importDefault(require("./middleware/authMiddleware"))
 const roleMiddleware_1 = __importDefault(require("./middleware/roleMiddleware"));
 const app = (0, express_1.default)();
 const port = process.env.PORT || 3002;
-// Configuración de CORS para desarrollo y producción
-const corsOptions = {
-    origin: function (origin, callback) {
-        const allowedOrigins = [
-            'http://localhost:3000',
-            'http://localhost:3001',
-            'http://127.0.0.1:3000',
-            'http://127.0.0.1:3001',
-            'https://gestion-despachos-2sls.vercel.app',
-            'https://gestion-despachos.vercel.app'
-        ];
-        // En producción, permitir cualquier origen
-        if (process.env.NODE_ENV === 'production' || !origin || allowedOrigins.includes(origin)) {
-            callback(null, true);
-        }
-        else {
-            callback(null, true); // Permitir todos en desarrollo
-        }
-    },
-    credentials: true,
+// Configuración de CORS ultra permisiva para Vercel
+app.use((0, cors_1.default)({
+    origin: '*',
+    credentials: false,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'Authorization']
-};
-app.use((0, cors_1.default)(corsOptions));
+    allowedHeaders: '*'
+}));
 app.use(express_1.default.json());
 // Endpoint de prueba
 app.get('/api/test', (req, res) => {
