@@ -13,7 +13,7 @@ export class UserModel {
     const client = await db.connect();
     try {
       await client.query(`
-        CREATE TABLE IF NOT EXISTS admins (
+        CREATE TABLE IF NOT EXISTS users (
           id SERIAL PRIMARY KEY,
           username VARCHAR(50) UNIQUE NOT NULL,
           password VARCHAR(255) NOT NULL,
@@ -31,7 +31,7 @@ export class UserModel {
     
     try {
       const result = await client.query(
-        'INSERT INTO admins (username, password, role) VALUES ($1, $2, $3) RETURNING id, username, password, role',
+        'INSERT INTO users (username, password, role) VALUES ($1, $2, $3) RETURNING id, username, password, role',
         [username, hashedPassword, role]
       );
       return result.rows[0];
@@ -45,7 +45,7 @@ export class UserModel {
     
     try {
       const result = await client.query(
-        'SELECT id, username, password, role FROM admins WHERE username = $1',
+        'SELECT id, username, password, role FROM users WHERE username = $1',
         [username]
       );
       return result.rows.length > 0 ? result.rows[0] : null;

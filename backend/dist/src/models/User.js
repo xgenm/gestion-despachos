@@ -21,7 +21,7 @@ class UserModel {
             const client = yield database_1.default.connect();
             try {
                 yield client.query(`
-        CREATE TABLE IF NOT EXISTS admins (
+        CREATE TABLE IF NOT EXISTS users (
           id SERIAL PRIMARY KEY,
           username VARCHAR(50) UNIQUE NOT NULL,
           password VARCHAR(255) NOT NULL,
@@ -39,7 +39,7 @@ class UserModel {
             const hashedPassword = yield bcryptjs_1.default.hash(password, 10);
             const client = yield database_1.default.connect();
             try {
-                const result = yield client.query('INSERT INTO admins (username, password, role) VALUES ($1, $2, $3) RETURNING id, username, password, role', [username, hashedPassword, role]);
+                const result = yield client.query('INSERT INTO users (username, password, role) VALUES ($1, $2, $3) RETURNING id, username, password, role', [username, hashedPassword, role]);
                 return result.rows[0];
             }
             finally {
@@ -51,7 +51,7 @@ class UserModel {
         return __awaiter(this, void 0, void 0, function* () {
             const client = yield database_1.default.connect();
             try {
-                const result = yield client.query('SELECT id, username, password, role FROM admins WHERE username = $1', [username]);
+                const result = yield client.query('SELECT id, username, password, role FROM users WHERE username = $1', [username]);
                 return result.rows.length > 0 ? result.rows[0] : null;
             }
             finally {
