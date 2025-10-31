@@ -56,12 +56,12 @@ const DispatchForm: React.FC<Props> = ({ onSubmit }) => {
     fetch(`${API_URL}/operators`).then(res => res.json()).then(data => setOperators(data.data || []));
   }, []);
 
-  // Auto-seleccionar el usuario logueado en "Atendido por"
+  // Auto-seleccionar el usuario logueado en "Atendido por" (garantizar que siempre tenga valor)
   useEffect(() => {
-    if (user && user.id && users.length > 0) {
+    if (user && user.id) {
       setFormData(prev => ({ ...prev, userId: user.id }));
     }
-  }, [user, users]);
+  }, [user]);
 
   const total = useMemo(() => {
     return Object.keys(selectedMaterials).reduce((acc, key) => {
@@ -102,8 +102,13 @@ const DispatchForm: React.FC<Props> = ({ onSubmit }) => {
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    
+    // Asegurar que userId tenga un valor válido antes de enviar
+    const finalUserId = formData.userId || user?.id || 1; // Fallback a admin si no hay usuario
+    
     const newDispatch: Omit<Dispatch, 'id'> = {
       ...formData,
+      userId: finalUserId,
       materials: Object.keys(selectedMaterials)
         .filter(key => selectedMaterials[key].selected && selectedMaterials[key].quantity > 0)
         .map(key => ({ id: key, quantity: selectedMaterials[key].quantity })),
