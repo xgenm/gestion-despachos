@@ -20,7 +20,6 @@ const initialFormState = {
   ficha: '',
   cliente: '',
   celular: '',
-  recibido: '',
   userId: 0,
   equipmentId: 0,
   operatorId: 0,
@@ -208,22 +207,18 @@ const DispatchForm: React.FC<Props> = ({ onSubmit }) => {
           <hr />
 
           <Row className="mb-3">
-            <Form.Group as={Col} controlId="cliente">
+            <Form.Group as={Col} md={6} controlId="cliente">
               <Form.Label>Cliente</Form.Label>
               <Form.Control type="text" value={formData.cliente} onChange={handleInputChange} />
             </Form.Group>
-            <Form.Group as={Col} controlId="celular">
+            <Form.Group as={Col} md={6} controlId="celular">
               <Form.Label>Celular</Form.Label>
               <Form.Control type="text" value={formData.celular} onChange={handleInputChange} />
             </Form.Group>
           </Row>
 
           <Row className="mb-3">
-            <Form.Group as={Col} controlId="recibido">
-              <Form.Label>Recibido</Form.Label>
-              <Form.Control type="text" value={formData.recibido} onChange={handleInputChange} />
-            </Form.Group>
-            <Form.Group as={Col} controlId="total">
+            <Form.Group as={Col} md={6} controlId="total">
               <Form.Label>Total a Pagar (RD$)</Form.Label>
               <Form.Control type="number" readOnly value={total.toFixed(2)} />
             </Form.Group>

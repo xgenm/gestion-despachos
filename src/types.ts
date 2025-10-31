@@ -10,7 +10,7 @@ export interface Dispatch {
   materials: { id: string; quantity: number }[];
   cliente: string;
   celular: string;
-  recibido: string;
+  recibido?: string; // Campo antiguo, ya no se usa
   total: number;
   userId: number;
   equipmentId: number;
