@@ -80,7 +80,6 @@ const DispatchHistory: React.FC<Props> = ({ dispatches, onDelete }) => {
           'FICHA': d.ficha || 'NO ESPECIFICADO',
           'MATERIALES': materialDetails,
           'TOTAL (RD$)': d.total.toFixed(2),
-          'RECIBIDO POR': d.recibido.toUpperCase(),
           'ATENDIDO POR': d.userName || 'NO ESPECIFICADO',
           'EQUIPO': d.equipmentName || 'NO ESPECIFICADO',
           'OPERARIO': d.operatorName || 'NO ESPECIFICADO',
@@ -106,7 +105,6 @@ const DispatchHistory: React.FC<Props> = ({ dispatches, onDelete }) => {
         { wch: 12 }, // FICHA
         { wch: 50 }, // MATERIALES
         { wch: 15 }, // TOTAL
-        { wch: 20 }, // RECIBIDO POR
         { wch: 20 }, // ATENDIDO POR
         { wch: 15 }, // EQUIPO
         { wch: 15 }, // OPERARIO
@@ -217,7 +215,6 @@ const DispatchHistory: React.FC<Props> = ({ dispatches, onDelete }) => {
         `Fecha: ${new Date(dispatch.fecha).toLocaleDateString()}`,
         `Hora: ${dispatch.hora}`,
         `Cliente: ${dispatch.cliente}`,
-        `Recibido por: ${dispatch.recibido}`,
         `Atendido por: ${dispatch.userName || 'No especificado'}`,
         `Camión: ${dispatch.camion || 'No especificado'}`,
         `Placa: ${dispatch.placa || 'No especificado'}`,
@@ -306,7 +303,6 @@ const DispatchHistory: React.FC<Props> = ({ dispatches, onDelete }) => {
                 <p><strong>Fecha:</strong> ${new Date(dispatch.fecha).toLocaleDateString()}</p>
                 <p><strong>Hora:</strong> ${dispatch.hora}</p>
                 <p><strong>Cliente:</strong> ${dispatch.cliente}</p>
-                <p><strong>Recibido por:</strong> ${dispatch.recibido}</p>
                 <p><strong>Atendido por:</strong> ${dispatch.userName || 'No especificado'}</p>
               </div>
               
