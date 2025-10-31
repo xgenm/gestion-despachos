@@ -94,7 +94,7 @@ router.post('/', async (req: AuthRequest, res) => {
   
   if (disableAuth) {
     // En modo desarrollo, almacenar en memoria con número automático
-    const despachoNo = `TK-${String(nextDispatchId).padStart(6, '0')}`;
+    const despachoNo = String(nextDispatchId).padStart(7, '0'); // 7 dígitos numéricos
     const newDispatch = {
       id: nextDispatchId++,
       despachoNo,
@@ -125,7 +125,7 @@ router.post('/', async (req: AuthRequest, res) => {
     // Obtener siguiente número de despacho (atómico)
     const numberResult = await client.query('SELECT get_next_dispatch_number() as next_number');
     const nextNumber = numberResult.rows[0].next_number;
-    const despachoNo = `TK-${String(nextNumber).padStart(6, '0')}`;
+    const despachoNo = String(nextNumber).padStart(7, '0'); // 7 dígitos numéricos
     
     console.log('🔢 Número generado:', despachoNo);
     

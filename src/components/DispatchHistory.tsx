@@ -74,8 +74,8 @@ const DispatchHistory: React.FC<Props> = ({ dispatches, onDelete }) => {
           'FECHA': d.fecha,
           'HORA': d.hora,
           'CLIENTE': d.cliente.toUpperCase(),
-          'CAMIÓN': d.camion || 'NO ESPECIFICADO',
           'PLACA': d.placa || 'NO ESPECIFICADO',
+          'CAMIÓN': d.camion || 'NO ESPECIFICADO',
           'COLOR': d.color || 'NO ESPECIFICADO',
           'FICHA': d.ficha || 'NO ESPECIFICADO',
           'MATERIALES': materialDetails,
@@ -99,8 +99,8 @@ const DispatchHistory: React.FC<Props> = ({ dispatches, onDelete }) => {
         { wch: 12 }, // FECHA
         { wch: 10 }, // HORA
         { wch: 25 }, // CLIENTE
-        { wch: 15 }, // CAMIÓN
         { wch: 12 }, // PLACA
+        { wch: 15 }, // CAMIÓN
         { wch: 12 }, // COLOR
         { wch: 12 }, // FICHA
         { wch: 50 }, // MATERIALES
@@ -219,8 +219,8 @@ const DispatchHistory: React.FC<Props> = ({ dispatches, onDelete }) => {
         `Hora: ${dispatch.hora}`,
         `Cliente: ${dispatch.cliente}`,
         `Atendido por: ${dispatch.userName || 'No especificado'}`,
-        `Camión: ${dispatch.camion || 'No especificado'}`,
         `Placa: ${dispatch.placa || 'No especificado'}`,
+        `Camión: ${dispatch.camion || 'No especificado'}`,
         `Color: ${dispatch.color || 'No especificado'}`,
         `Ficha: ${dispatch.ficha || 'No especificado'}`
       ];
@@ -310,8 +310,8 @@ const DispatchHistory: React.FC<Props> = ({ dispatches, onDelete }) => {
               </div>
               
               <div class="info-section">
-                <p><strong>Camión:</strong> ${dispatch.camion || 'No especificado'}</p>
                 <p><strong>Placa:</strong> ${dispatch.placa || 'No especificado'}</p>
+                <p><strong>Camión:</strong> ${dispatch.camion || 'No especificado'}</p>
                 <p><strong>Color:</strong> ${dispatch.color || 'No especificado'}</p>
                 <p><strong>Ficha:</strong> ${dispatch.ficha || 'No especificado'}</p>
               </div>

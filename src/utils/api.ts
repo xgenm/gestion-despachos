@@ -14,11 +14,16 @@ interface FetchOptions extends RequestInit {
 export async function apiFetch(endpoint: string, options: FetchOptions = {}): Promise<Response> {
   const { requireAuth = true, ...fetchOptions } = options;
   
-  // Preparar headers
-  const headers: HeadersInit = {
+  // Preparar headers con tipo explícito
+  const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    ...fetchOptions.headers,
   };
+  
+  // Copiar headers adicionales si existen
+  if (fetchOptions.headers) {
+    const additionalHeaders = fetchOptions.headers as Record<string, string>;
+    Object.assign(headers, additionalHeaders);
+  }
   
   // Agregar token si se requiere autenticación
   if (requireAuth) {

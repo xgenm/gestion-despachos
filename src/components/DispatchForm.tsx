@@ -168,9 +168,11 @@ const DispatchForm: React.FC<Props> = ({ onSubmit }) => {
                 value={formData.despachoNo} 
                 onChange={handleInputChange}
                 readOnly={user?.role === 'employee'}
-                placeholder={user?.role === 'employee' ? 'Se asignará automáticamente' : 'Dejar vacío para asignar automáticamente'}
+                placeholder={user?.role === 'employee' ? 'Se asignará automáticamente' : '7 dígitos numéricos (ej: 0000001)'}
+                maxLength={7}
+                pattern="[0-9]{7}"
               />
-              {user?.role === 'employee' && <Form.Text className="text-muted">El número se generará automáticamente</Form.Text>}
+              {user?.role === 'employee' && <Form.Text className="text-muted">El número se generará automáticamente (7 dígitos)</Form.Text>}
             </Form.Group>
             <Form.Group as={Col} controlId="fecha">
               <Form.Label>Fecha</Form.Label>
@@ -210,13 +212,13 @@ const DispatchForm: React.FC<Props> = ({ onSubmit }) => {
           <hr />
 
           <Row className="mb-3">
-            <Form.Group as={Col} controlId="camion">
-              <Form.Label>Camión</Form.Label>
-              <Form.Control type="text" value={formData.camion} onChange={handleInputChange} />
-            </Form.Group>
             <Form.Group as={Col} controlId="placa">
               <Form.Label>Placa</Form.Label>
-              <Form.Control type="text" value={formData.placa} onChange={handleInputChange} />
+              <Form.Control type="text" value={formData.placa} onChange={handleInputChange} required />
+            </Form.Group>
+            <Form.Group as={Col} controlId="camion">
+              <Form.Label>Camión</Form.Label>
+              <Form.Control type="text" value={formData.camion} onChange={handleInputChange} required />
             </Form.Group>
             <Form.Group as={Col} controlId="color">
               <Form.Label>Color</Form.Label>
@@ -224,7 +226,12 @@ const DispatchForm: React.FC<Props> = ({ onSubmit }) => {
             </Form.Group>
             <Form.Group as={Col} controlId="ficha">
               <Form.Label>Ficha</Form.Label>
-              <Form.Control type="text" value={formData.ficha} onChange={handleInputChange} />
+              <Form.Control 
+                type="text" 
+                value={formData.ficha} 
+                onChange={handleInputChange}
+                placeholder="Alfanumérico"
+              />
             </Form.Group>
           </Row>
 
