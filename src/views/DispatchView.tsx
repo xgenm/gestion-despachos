@@ -47,6 +47,8 @@ const DispatchView: React.FC = () => {
 
   const handleCreateDispatch = async (newDispatch: Omit<Dispatch, 'id'>) => {
     try {
+      console.log('📤 Enviando despacho:', newDispatch);
+      
       // Guardar cliente automáticamente si no existe
       if (newDispatch.cliente && newDispatch.cliente.trim()) {
         try {
@@ -76,6 +78,8 @@ const DispatchView: React.FC = () => {
 
       // Crear el despacho
       const token = localStorage.getItem('token');
+      console.log('🔑 Token:', token ? 'Presente' : 'Ausente');
+      
       const response = await fetch(`${API_URL}/dispatches`, {
         method: 'POST',
         headers: {
@@ -88,8 +92,11 @@ const DispatchView: React.FC = () => {
         }),
       });
       
+      console.log('📥 Response status:', response.status);
+      const result = await response.json();
+      console.log('📥 Response data:', result);
+      
       if (response.ok) {
-        const result = await response.json();
         // Mostrar mensaje con el número de ticket generado
         if (result.despachoNo) {
           alert(`Ticket creado exitosamente: ${result.despachoNo}`);
