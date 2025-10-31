@@ -130,23 +130,25 @@ router.get('/users', authenticateToken, async (req, res) => {
       // En modo desarrollo, retornar lista de usuarios simulados
       const users = devUsers.map(u => ({
         id: u.id,
+        name: u.username, // Alias para compatibilidad con frontend
         username: u.username,
         role: u.role
       }));
-      return res.json(users);
+      return res.json({ data: users });
     }
     
     // En modo con BD real, obtener todos los usuarios
     const users = await UserModel.getAllUsers();
     const usersResponse = users.map(u => ({
       id: u.id,
+      name: u.username, // Alias para compatibilidad con frontend
       username: u.username,
       role: u.role,
       created_by: u.created_by,
       created_at: u.created_at
     }));
     
-    res.json(usersResponse);
+    res.json({ data: usersResponse });
   } catch (error) {
     console.error('Error al obtener usuarios:', error);
     res.status(500).json({ error: 'Error interno del servidor' });

@@ -31,7 +31,7 @@ router.get('/', async (req, res) => {
     const sql = `
       SELECT 
         d.*,
-        u.name as userName,
+        u.username as userName,
         e.name as equipmentName,
         o.name as operatorName
       FROM dispatches d
