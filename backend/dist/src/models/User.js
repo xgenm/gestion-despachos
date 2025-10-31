@@ -25,7 +25,9 @@ class UserModel {
           id SERIAL PRIMARY KEY,
           username VARCHAR(50) UNIQUE NOT NULL,
           password VARCHAR(255) NOT NULL,
-          role VARCHAR(20) DEFAULT 'employee' NOT NULL
+          role VARCHAR(20) DEFAULT 'employee' NOT NULL,
+          created_by INTEGER REFERENCES users(id),
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
       `);
             }
@@ -35,11 +37,11 @@ class UserModel {
         });
     }
     static createUser(username_1, password_1) {
-        return __awaiter(this, arguments, void 0, function* (username, password, role = 'employee') {
+        return __awaiter(this, arguments, void 0, function* (username, password, role = 'employee', createdBy) {
             const hashedPassword = yield bcryptjs_1.default.hash(password, 10);
             const client = yield database_1.default.connect();
             try {
-                const result = yield client.query('INSERT INTO users (username, password, role) VALUES ($1, $2, $3) RETURNING id, username, password, role', [username, hashedPassword, role]);
+                const result = yield client.query('INSERT INTO users (username, password, role, created_by) VALUES ($1, $2, $3, $4) RETURNING id, username, password, role, created_by, created_at', [username, hashedPassword, role, createdBy || null]);
                 return result.rows[0];
             }
             finally {
@@ -62,6 +64,30 @@ class UserModel {
     static validatePassword(user, password) {
         return __awaiter(this, void 0, void 0, function* () {
             return bcryptjs_1.default.compare(password, user.password);
+        });
+    }
+    static getAllUsers() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const client = yield database_1.default.connect();
+            try {
+                const result = yield client.query('SELECT id, username, role, created_by, created_at FROM users ORDER BY id ASC');
+                return result.rows;
+            }
+            finally {
+                client.release();
+            }
+        });
+    }
+    static deleteUser(id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const client = yield database_1.default.connect();
+            try {
+                const result = yield client.query('DELETE FROM users WHERE id = $1', [id]);
+                return (result.rowCount || 0) > 0;
+            }
+            finally {
+                client.release();
+            }
         });
     }
 }

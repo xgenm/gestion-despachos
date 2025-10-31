@@ -8,6 +8,8 @@ interface Employee {
   id: number;
   username: string;
   role: string;
+  created_by?: number;
+  created_at?: string;
 }
 
 const EmployeeManagementView: React.FC = () => {
@@ -167,6 +169,8 @@ const EmployeeManagementView: React.FC = () => {
                     <th>ID</th>
                     <th>Nombre de Usuario</th>
                     <th>Rol</th>
+                    <th>Creado Por (ID)</th>
+                    <th>Fecha de Creación</th>
                     <th>Acciones</th>
                   </tr>
                 </thead>
@@ -176,6 +180,19 @@ const EmployeeManagementView: React.FC = () => {
                       <td>{employee.id}</td>
                       <td>{employee.username}</td>
                       <td>{employee.role === 'admin' ? 'Administrador' : 'Empleado'}</td>
+                      <td>{employee.created_by || '-'}</td>
+                      <td>
+                        {employee.created_at 
+                          ? new Date(employee.created_at).toLocaleDateString('es-ES', {
+                              year: 'numeric',
+                              month: 'short',
+                              day: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })
+                          : '-'
+                        }
+                      </td>
                       <td>
                         <Button 
                           variant="danger" 

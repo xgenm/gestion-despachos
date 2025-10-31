@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const User_1 = require("../models/User");
+const authMiddleware_1 = __importDefault(require("../middleware/authMiddleware"));
 const router = (0, express_1.Router)();
 // Usuario de prueba para desarrollo
 const devUser = {
@@ -27,9 +28,11 @@ const devUser = {
 let devUsers = [devUser];
 let nextDevUserId = 2;
 // Registro de administrador (solo para crear el primer usuario)
-router.post('/register', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.post('/register', authMiddleware_1.default, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     try {
         const { username, password, role = 'employee' } = req.body;
+        const createdBy = (_a = req.user) === null || _a === void 0 ? void 0 : _a.id; // ID del usuario que está creando este empleado
         // Validación básica
         if (!username || !password) {
             return res.status(400).json({ error: 'Nombre de usuario y contraseña son requeridos' });
@@ -67,8 +70,8 @@ router.post('/register', (req, res) => __awaiter(void 0, void 0, void 0, functio
         if (existingUser) {
             return res.status(400).json({ error: 'El nombre de usuario ya está en uso' });
         }
-        // Crear nuevo usuario
-        const user = yield User_1.UserModel.createUser(username, password, role);
+        // Crear nuevo usuario con el campo created_by
+        const user = yield User_1.UserModel.createUser(username, password, role, createdBy);
         // Generar token
         const secret = process.env.JWT_SECRET || 'secreto_por_defecto';
         const token = jsonwebtoken_1.default.sign({ id: user.id, username: user.username, role: user.role }, secret, { expiresIn: '24h' });
@@ -78,7 +81,8 @@ router.post('/register', (req, res) => __awaiter(void 0, void 0, void 0, functio
             user: {
                 id: user.id,
                 username: user.username,
-                role: user.role
+                role: user.role,
+                created_by: user.created_by
             }
         });
     }
@@ -87,8 +91,8 @@ router.post('/register', (req, res) => __awaiter(void 0, void 0, void 0, functio
         res.status(500).json({ error: 'Error interno del servidor' });
     }
 }));
-// Obtener lista de usuarios (para modo desarrollo)
-router.get('/users', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+// Obtener lista de usuarios
+router.get('/users', authMiddleware_1.default, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const disableAuth = process.env.DISABLE_AUTH === 'true';
         if (disableAuth) {
@@ -100,8 +104,16 @@ router.get('/users', (req, res) => __awaiter(void 0, void 0, void 0, function* (
             }));
             return res.json(users);
         }
-        // En modo con BD real (no implementado aún)
-        res.status(501).json({ error: 'Endpoint no implementado para modo BD real' });
+        // En modo con BD real, obtener todos los usuarios
+        const users = yield User_1.UserModel.getAllUsers();
+        const usersResponse = users.map(u => ({
+            id: u.id,
+            username: u.username,
+            role: u.role,
+            created_by: u.created_by,
+            created_at: u.created_at
+        }));
+        res.json(usersResponse);
     }
     catch (error) {
         console.error('Error al obtener usuarios:', error);
@@ -109,13 +121,20 @@ router.get('/users', (req, res) => __awaiter(void 0, void 0, void 0, function* (
     }
 }));
 // Eliminar usuario
-router.delete('/users/:id', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.delete('/users/:id', authMiddleware_1.default, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     try {
         const { id } = req.params;
+        const userId = parseInt(id);
+        const currentUserId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.id;
+        // Validar que no se pueda auto-eliminar
+        if (userId === currentUserId) {
+            return res.status(400).json({ error: 'No puedes eliminar tu propio usuario' });
+        }
         const disableAuth = process.env.DISABLE_AUTH === 'true';
         if (disableAuth) {
             // En modo desarrollo, eliminar usuario simulado
-            const userIndex = devUsers.findIndex(u => u.id === parseInt(id));
+            const userIndex = devUsers.findIndex(u => u.id === userId);
             if (userIndex === -1) {
                 return res.status(404).json({ error: 'Usuario no encontrado' });
             }
@@ -126,8 +145,12 @@ router.delete('/users/:id', (req, res) => __awaiter(void 0, void 0, void 0, func
             devUsers.splice(userIndex, 1);
             return res.json({ message: 'Usuario eliminado exitosamente' });
         }
-        // En modo con BD real (no implementado aún)
-        res.status(501).json({ error: 'Endpoint no implementado para modo BD real' });
+        // En modo con BD real, eliminar usuario
+        const deleted = yield User_1.UserModel.deleteUser(userId);
+        if (!deleted) {
+            return res.status(404).json({ error: 'Usuario no encontrado' });
+        }
+        res.json({ message: 'Usuario eliminado exitosamente' });
     }
     catch (error) {
         console.error('Error al eliminar usuario:', error);
