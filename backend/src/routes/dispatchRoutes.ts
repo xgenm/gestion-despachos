@@ -54,15 +54,41 @@ router.get('/', async (req, res) => {
 router.post('/', async (req: AuthRequest, res) => {
   const { fecha, hora, camion, placa, color, ficha, materials, cliente, celular, total, userId, equipmentId, operatorId } = req.body;
   
+  console.log('📥 Backend recibiendo despacho:', { fecha, hora, camion, placa, cliente, userId, total, materials });
+  
   // Validación básica de datos requeridos (despachoNo ya no es necesario, se genera automáticamente)
   if (!fecha || !hora || !camion || !placa || !cliente) {
+    console.error('❌ Faltan campos requeridos:', { fecha, hora, camion, placa, cliente });
     return res.status(400).json({ error: 'Faltan campos requeridos' });
   }
   
-  // Validación de tipos
-  if (isNaN(total) || (userId && isNaN(userId)) || (equipmentId && isNaN(equipmentId)) || (operatorId && isNaN(operatorId))) {
-    return res.status(400).json({ error: 'Tipos de datos inválidos' });
+  // Convertir y validar tipos
+  const finalTotal = typeof total === 'string' ? parseFloat(total) : total;
+  const finalUserId = userId && userId > 0 ? userId : 1; // Fallback a admin si no hay userId válido
+  const finalEquipmentId = equipmentId && equipmentId > 0 ? equipmentId : null;
+  const finalOperatorId = operatorId && operatorId > 0 ? operatorId : null;
+  
+  if (isNaN(finalTotal) || finalTotal < 0) {
+    console.error('❌ Total inválido:', total);
+    return res.status(400).json({ error: 'Total inválido' });
   }
+  
+  // Validar y procesar materials
+  let finalMaterials;
+  if (Array.isArray(materials)) {
+    finalMaterials = materials;
+  } else if (typeof materials === 'string') {
+    try {
+      finalMaterials = JSON.parse(materials);
+    } catch (e) {
+      console.error('❌ Error al parsear materials:', e);
+      return res.status(400).json({ error: 'Formato de materiales inválido' });
+    }
+  } else {
+    finalMaterials = [];
+  }
+  
+  console.log('✅ Datos validados:', { userId: finalUserId, total: finalTotal, materials: finalMaterials.length });
   
   const disableAuth = process.env.DISABLE_AUTH === 'true';
   
@@ -78,13 +104,13 @@ router.post('/', async (req: AuthRequest, res) => {
       placa,
       color,
       ficha,
-      materials,
+      materials: finalMaterials,
       cliente,
       celular,
-      total,
-      userId,
-      equipmentId,
-      operatorId,
+      total: finalTotal,
+      userId: finalUserId,
+      equipmentId: finalEquipmentId,
+      operatorId: finalOperatorId,
       userName: 'Usuario',
       equipmentName: 'Equipo',
       operatorName: 'Operario'
@@ -101,12 +127,18 @@ router.post('/', async (req: AuthRequest, res) => {
     const nextNumber = numberResult.rows[0].next_number;
     const despachoNo = `TK-${String(nextNumber).padStart(6, '0')}`;
     
+    console.log('🔢 Número generado:', despachoNo);
+    
     const sql = `INSERT INTO dispatches (despachoNo, fecha, hora, camion, placa, color, ficha, materials, cliente, celular, total, userId, equipmentId, operatorId)
                  VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) RETURNING id`;
-    const params = [despachoNo, fecha, hora, camion, placa, color, ficha, JSON.stringify(materials), cliente, celular, total, userId, equipmentId, operatorId];
+    const params = [despachoNo, fecha, hora, camion, placa, color, ficha, JSON.stringify(finalMaterials), cliente, celular, finalTotal, finalUserId, finalEquipmentId, finalOperatorId];
+    
+    console.log('💾 Insertando en BD con userId:', finalUserId);
     
     const result = await client.query(sql, params);
     const dispatchId = result.rows[0].id;
+    
+    console.log('✅ Despacho creado exitosamente. ID:', dispatchId, 'Número:', despachoNo);
     
     // Registrar en auditoría
     if (req.user) {
@@ -116,14 +148,14 @@ router.post('/', async (req: AuthRequest, res) => {
         'CREATE',
         'dispatch',
         dispatchId,
-        { despachoNo, cliente, total },
+        { despachoNo, cliente, total: finalTotal },
         req
       );
     }
     
     res.json({ id: dispatchId, despachoNo });
   } catch (err) {
-    console.error('Error al crear despacho:', err);
+    console.error('❌ Error al crear despacho:', err);
     res.status(500).json({ error: 'Error al crear despacho', details: (err as Error).message });
   } finally {
     client.release();

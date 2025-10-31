@@ -20,7 +20,6 @@ const DispatchView: React.FC = () => {
         }
       });
       const data = await response.json();
-      console.log('Datos recibidos del backend:', data.data[0]); // Ver primer despacho
       const formattedData = data.data.map((d: any) => ({
         ...d, 
         materials: typeof d.materials === 'string' ? JSON.parse(d.materials) : d.materials,
@@ -46,9 +45,9 @@ const DispatchView: React.FC = () => {
   };
 
   const handleCreateDispatch = async (newDispatch: Omit<Dispatch, 'id'>) => {
+    console.log('📤 Frontend enviando despacho:', newDispatch);
+    
     try {
-      console.log('📤 Enviando despacho:', newDispatch);
-      
       // Guardar cliente automáticamente si no existe
       if (newDispatch.cliente && newDispatch.cliente.trim()) {
         try {
@@ -65,38 +64,42 @@ const DispatchView: React.FC = () => {
         }
       }
 
-      // Guardar camión automáticamente si no existe
-      if (newDispatch.camion && newDispatch.camion.trim()) {
-        try {
-          // Crear una tabla o endpoint para camiones si no existe
-          // Por ahora solo registramos el intento
-          console.log('Registrando camión:', newDispatch.camion);
-        } catch (error) {
-          console.log('Error al registrar camión');
-        }
-      }
+      // Preparar el despacho para enviar
+      const dispatchToSend = {
+        fecha: newDispatch.fecha,
+        hora: newDispatch.hora,
+        camion: newDispatch.camion,
+        placa: newDispatch.placa,
+        color: newDispatch.color || '',
+        ficha: newDispatch.ficha || '',
+        materials: newDispatch.materials,
+        cliente: newDispatch.cliente,
+        celular: newDispatch.celular || '',
+        total: newDispatch.total,
+        userId: newDispatch.userId || 1,
+        equipmentId: newDispatch.equipmentId || null,
+        operatorId: newDispatch.operatorId || null
+      };
+
+      console.log('🔑 Token presente:', !!localStorage.getItem('token'));
+      console.log('📦 Datos a enviar:', dispatchToSend);
 
       // Crear el despacho
       const token = localStorage.getItem('token');
-      console.log('🔑 Token:', token ? 'Presente' : 'Ausente');
-      
       const response = await fetch(`${API_URL}/dispatches`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({
-          ...newDispatch,
-          materials: JSON.stringify(newDispatch.materials)
-        }),
+        body: JSON.stringify(dispatchToSend),
       });
       
-      console.log('📥 Response status:', response.status);
-      const result = await response.json();
-      console.log('📥 Response data:', result);
+      console.log('📡 Respuesta status:', response.status);
       
       if (response.ok) {
+        const result = await response.json();
+        console.log('✅ Ticket creado:', result);
         // Mostrar mensaje con el número de ticket generado
         if (result.despachoNo) {
           alert(`Ticket creado exitosamente: ${result.despachoNo}`);
@@ -105,10 +108,12 @@ const DispatchView: React.FC = () => {
         fetchDispatches();
       } else {
         const errorData = await response.json();
-        console.error("Error creating dispatch:", errorData.error);
+        console.error('❌ Error del servidor:', errorData);
+        alert(`Error al crear ticket: ${errorData.error || 'Error desconocido'}`);
       }
     } catch (error) {
-      console.error("Error creating dispatch:", error);
+      console.error('❌ Error de red:', error);
+      alert('Error al crear ticket. Verifica tu conexión.');
     }
   };
 
