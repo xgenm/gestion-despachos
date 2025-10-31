@@ -4,6 +4,7 @@ import { Dispatch } from '../types';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import DispatchDetailModal from './DispatchDetailModal';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -224,7 +225,7 @@ const DispatchHistory: React.FC<Props> = ({ dispatches, onDelete }) => {
       `RD$ ${dispatch.total.toFixed(2)}`
     ]);
 
-    (doc as any).autoTable({
+    autoTable(doc, {
       head: [['Material', 'Cantidad (m³)', 'Precio Unitario', 'Total']],
       body: tableData,
       startY: yPosition,
