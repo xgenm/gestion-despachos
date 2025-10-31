@@ -44,7 +44,7 @@ const getMaterialPrice = (id: string) => {
 };
 
 const DispatchDetailModal: React.FC<DispatchDetailModalProps> = ({ dispatch, show, onHide, onPrint }) => {
-  if (!dispatch) return null;
+  if (!show || !dispatch) return null;
 
   // Formatear la fecha
   const formattedDate = new Date(dispatch.fecha).toLocaleDateString();
