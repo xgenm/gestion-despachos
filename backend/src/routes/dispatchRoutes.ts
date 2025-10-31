@@ -52,10 +52,10 @@ router.get('/', async (req, res) => {
 
 // POST /api/dispatches
 router.post('/', async (req: AuthRequest, res) => {
-  const { despachoNo, fecha, hora, camion, placa, color, ficha, materials, cliente, celular, recibido, total, userId, equipmentId, operatorId } = req.body;
+  const { fecha, hora, camion, placa, color, ficha, materials, cliente, celular, total, userId, equipmentId, operatorId } = req.body;
   
-  // Validación básica de datos requeridos
-  if (!despachoNo || !fecha || !hora || !camion || !placa || !cliente) {
+  // Validación básica de datos requeridos (despachoNo ya no es necesario, se genera automáticamente)
+  if (!fecha || !hora || !camion || !placa || !cliente) {
     return res.status(400).json({ error: 'Faltan campos requeridos' });
   }
   
@@ -67,7 +67,8 @@ router.post('/', async (req: AuthRequest, res) => {
   const disableAuth = process.env.DISABLE_AUTH === 'true';
   
   if (disableAuth) {
-    // En modo desarrollo, almacenar en memoria
+    // En modo desarrollo, almacenar en memoria con número automático
+    const despachoNo = `TK-${String(nextDispatchId).padStart(6, '0')}`;
     const newDispatch = {
       id: nextDispatchId++,
       despachoNo,
@@ -80,7 +81,6 @@ router.post('/', async (req: AuthRequest, res) => {
       materials,
       cliente,
       celular,
-      recibido,
       total,
       userId,
       equipmentId,
@@ -90,15 +90,20 @@ router.post('/', async (req: AuthRequest, res) => {
       operatorName: 'Operario'
     };
     devDispatches.push(newDispatch);
-    return res.json({ id: newDispatch.id });
+    return res.json({ id: newDispatch.id, despachoNo });
   }
   
   const client = await db.connect();
   
   try {
-    const sql = `INSERT INTO dispatches (despachoNo, fecha, hora, camion, placa, color, ficha, materials, cliente, celular, recibido, total, userId, equipmentId, operatorId)
-                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) RETURNING id`;
-    const params = [despachoNo, fecha, hora, camion, placa, color, ficha, JSON.stringify(materials), cliente, celular, recibido, total, userId, equipmentId, operatorId];
+    // Obtener siguiente número de despacho (atómico)
+    const numberResult = await client.query('SELECT get_next_dispatch_number() as next_number');
+    const nextNumber = numberResult.rows[0].next_number;
+    const despachoNo = `TK-${String(nextNumber).padStart(6, '0')}`;
+    
+    const sql = `INSERT INTO dispatches (despachoNo, fecha, hora, camion, placa, color, ficha, materials, cliente, celular, total, userId, equipmentId, operatorId)
+                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) RETURNING id`;
+    const params = [despachoNo, fecha, hora, camion, placa, color, ficha, JSON.stringify(materials), cliente, celular, total, userId, equipmentId, operatorId];
     
     const result = await client.query(sql, params);
     const dispatchId = result.rows[0].id;
@@ -116,10 +121,73 @@ router.post('/', async (req: AuthRequest, res) => {
       );
     }
     
-    res.json({ id: dispatchId });
+    res.json({ id: dispatchId, despachoNo });
   } catch (err) {
     console.error('Error al crear despacho:', err);
     res.status(500).json({ error: 'Error al crear despacho', details: (err as Error).message });
+  } finally {
+    client.release();
+  }
+});
+
+// PUT /api/dispatches/:id/number (solo admin puede cambiar el número)
+router.put('/:id/number', async (req: AuthRequest, res) => {
+  // Verificar que el usuario sea admin
+  if (req.user?.role !== 'admin') {
+    return res.status(403).json({ error: 'Acceso denegado. Solo administradores pueden modificar el número de ticket.' });
+  }
+  
+  const id = parseInt(req.params.id);
+  const { despachoNo } = req.body;
+  
+  // Validación
+  if (isNaN(id)) {
+    return res.status(400).json({ error: 'ID inválido' });
+  }
+  
+  if (!despachoNo || typeof despachoNo !== 'string') {
+    return res.status(400).json({ error: 'Número de despacho inválido' });
+  }
+  
+  const disableAuth = process.env.DISABLE_AUTH === 'true';
+  
+  if (disableAuth) {
+    // En modo desarrollo
+    const dispatch = devDispatches.find(d => d.id === id);
+    if (!dispatch) {
+      return res.status(404).json({ error: 'Despacho no encontrado' });
+    }
+    dispatch.despachoNo = despachoNo;
+    return res.json({ message: 'Número de despacho actualizado correctamente', despachoNo });
+  }
+  
+  const client = await db.connect();
+  
+  try {
+    const sql = `UPDATE dispatches SET despachoNo = $1 WHERE id = $2`;
+    const result = await client.query(sql, [despachoNo, id]);
+    
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: 'Despacho no encontrado' });
+    }
+    
+    // Registrar en auditoría
+    if (req.user) {
+      await logManualAction(
+        req.user.id,
+        req.user.username,
+        'UPDATE',
+        'dispatch',
+        id,
+        { field: 'despachoNo', newValue: despachoNo },
+        req
+      );
+    }
+    
+    res.json({ message: 'Número de despacho actualizado correctamente', despachoNo });
+  } catch (err) {
+    console.error('Error al actualizar número de despacho:', err);
+    res.status(500).json({ error: 'Error al actualizar número de despacho', details: (err as Error).message });
   } finally {
     client.release();
   }

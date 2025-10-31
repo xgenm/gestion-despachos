@@ -121,7 +121,14 @@ const DispatchForm: React.FC<Props> = ({ onSubmit }) => {
           <Row className="mb-3">
             <Form.Group as={Col} controlId="despachoNo">
               <Form.Label>Ticket Nº</Form.Label>
-              <Form.Control type="text" value={formData.despachoNo} onChange={handleInputChange} />
+              <Form.Control 
+                type="text" 
+                value={formData.despachoNo} 
+                onChange={handleInputChange}
+                readOnly={user?.role === 'employee'}
+                placeholder={user?.role === 'employee' ? 'Se asignará automáticamente' : 'Dejar vacío para asignar automáticamente'}
+              />
+              {user?.role === 'employee' && <Form.Text className="text-muted">El número se generará automáticamente</Form.Text>}
             </Form.Group>
             <Form.Group as={Col} controlId="fecha">
               <Form.Label>Fecha</Form.Label>

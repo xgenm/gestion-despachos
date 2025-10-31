@@ -89,6 +89,11 @@ const DispatchView: React.FC = () => {
       });
       
       if (response.ok) {
+        const result = await response.json();
+        // Mostrar mensaje con el número de ticket generado
+        if (result.despachoNo) {
+          alert(`Ticket creado exitosamente: ${result.despachoNo}`);
+        }
         // Actualizar la lista de despachos
         fetchDispatches();
       } else {
