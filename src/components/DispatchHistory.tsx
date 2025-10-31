@@ -218,6 +218,7 @@ const DispatchHistory: React.FC<Props> = ({ dispatches, onDelete }) => {
         `Hora: ${dispatch.hora}`,
         `Cliente: ${dispatch.cliente}`,
         `Recibido por: ${dispatch.recibido}`,
+        `Atendido por: ${dispatch.userName || 'No especificado'}`,
         `Camión: ${dispatch.camion || 'No especificado'}`,
         `Placa: ${dispatch.placa || 'No especificado'}`,
         `Color: ${dispatch.color || 'No especificado'}`,
@@ -306,6 +307,7 @@ const DispatchHistory: React.FC<Props> = ({ dispatches, onDelete }) => {
                 <p><strong>Hora:</strong> ${dispatch.hora}</p>
                 <p><strong>Cliente:</strong> ${dispatch.cliente}</p>
                 <p><strong>Recibido por:</strong> ${dispatch.recibido}</p>
+                <p><strong>Atendido por:</strong> ${dispatch.userName || 'No especificado'}</p>
               </div>
               
               <div class="info-section">
