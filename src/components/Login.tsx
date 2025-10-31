@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Form, Button, Container, Row, Col, Card, Alert } from 'react-bootstrap';
 import { useAuth } from '../contexts/AuthContext';
+import './Login.css';
 
 const Login: React.FC = () => {
   const [username, setUsername] = useState('');
@@ -43,49 +44,97 @@ const Login: React.FC = () => {
   };
 
   return (
-    <Container className="mt-5">
-      <Row className="justify-content-md-center">
-        <Col md={6}>
-          <Card>
-            <Card.Header className="text-center">
-              <h4>Iniciar Sesión</h4>
-            </Card.Header>
-            <Card.Body>
-              {error && <Alert variant="danger">{error}</Alert>}
-              <Form onSubmit={handleSubmit}>
-                <Form.Group className="mb-3" controlId="username">
-                  <Form.Label>Nombre de usuario</Form.Label>
-                  <Form.Control
-                    type="text"
-                    placeholder="Ingrese su nombre de usuario"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    required
-                  />
-                </Form.Group>
-
-                <Form.Group className="mb-3" controlId="password">
-                  <Form.Label>Contraseña</Form.Label>
-                  <Form.Control
-                    type="password"
-                    placeholder="Ingrese su contraseña"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                  />
-                </Form.Group>
-
-                <div className="d-grid">
-                  <Button variant="primary" type="submit" disabled={loading}>
-                    {loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
-                  </Button>
+    <div className="login-container">
+      <Container fluid className="h-100">
+        <Row className="h-100 align-items-center justify-content-center">
+          <Col xs={11} sm={10} md={6} lg={5} xl={4}>
+            <Card className="login-card shadow-lg">
+              <Card.Body className="p-4 p-md-5">
+                <div className="text-center mb-4">
+                  <div className="login-icon mb-3">
+                    <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                      <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                  </div>
+                  <h3 className="login-title mb-2">Gestión de Despachos</h3>
+                  <p className="login-subtitle text-muted">Inicia sesión para continuar</p>
                 </div>
-              </Form>
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
-    </Container>
+
+                {error && (
+                  <Alert variant="danger" className="mb-4 login-alert">
+                    <strong>Error:</strong> {error}
+                  </Alert>
+                )}
+
+                <Form onSubmit={handleSubmit}>
+                  <Form.Group className="mb-4" controlId="username">
+                    <Form.Label className="login-label">Usuario</Form.Label>
+                    <div className="input-with-icon">
+                      <svg className="input-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                        <circle cx="12" cy="7" r="4"/>
+                      </svg>
+                      <Form.Control
+                        type="text"
+                        placeholder="Nombre de usuario"
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
+                        required
+                        className="login-input"
+                        autoComplete="username"
+                      />
+                    </div>
+                  </Form.Group>
+
+                  <Form.Group className="mb-4" controlId="password">
+                    <Form.Label className="login-label">Contraseña</Form.Label>
+                    <div className="input-with-icon">
+                      <svg className="input-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                      </svg>
+                      <Form.Control
+                        type="password"
+                        placeholder="Contraseña"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                        className="login-input"
+                        autoComplete="current-password"
+                      />
+                    </div>
+                  </Form.Group>
+
+                  <div className="d-grid">
+                    <Button 
+                      variant="primary" 
+                      type="submit" 
+                      disabled={loading}
+                      className="login-button"
+                      size="lg"
+                    >
+                      {loading ? (
+                        <>
+                          <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                          Iniciando sesión...
+                        </>
+                      ) : (
+                        'Iniciar Sesión'
+                      )}
+                    </Button>
+                  </div>
+                </Form>
+
+                <div className="text-center mt-4">
+                  <small className="text-muted">v1.0.0 - Sistema de Gestión</small>
+                </div>
+              </Card.Body>
+            </Card>
+          </Col>
+        </Row>
+      </Container>
+    </div>
   );
 };
 
