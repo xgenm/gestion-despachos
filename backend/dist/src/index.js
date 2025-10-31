@@ -24,6 +24,7 @@ const operatorRoutes_1 = __importDefault(require("./routes/operatorRoutes"));
 const companyRoutes_1 = __importDefault(require("./routes/companyRoutes"));
 const clientRoutes_1 = __importDefault(require("./routes/clientRoutes"));
 const authRoutes_1 = __importDefault(require("./routes/authRoutes"));
+const auditRoutes_1 = __importDefault(require("./routes/auditRoutes"));
 const authMiddleware_1 = __importDefault(require("./middleware/authMiddleware"));
 const roleMiddleware_1 = __importDefault(require("./middleware/roleMiddleware"));
 const app = (0, express_1.default)();
@@ -83,12 +84,14 @@ app.post('/api/test-login', (req, res) => __awaiter(void 0, void 0, void 0, func
 // Rutas públicas (sin autenticación)
 app.use('/api/auth', authRoutes_1.default);
 // Rutas protegidas (requieren autenticación)
+// GET permitido para todos, POST/PUT/DELETE solo para admin
 app.use('/api/dispatches', authMiddleware_1.default, dispatchRoutes_1.default);
 // Rutas protegidas que requieren rol de administrador
 app.use('/api/users', (0, roleMiddleware_1.default)('admin'), userRoutes_1.default);
 app.use('/api/equipment', (0, roleMiddleware_1.default)('admin'), equipmentRoutes_1.default);
 app.use('/api/operators', (0, roleMiddleware_1.default)('admin'), operatorRoutes_1.default);
 app.use('/api/companies', (0, roleMiddleware_1.default)('admin'), companyRoutes_1.default);
+app.use('/api/audit', (0, roleMiddleware_1.default)('admin'), auditRoutes_1.default); // Logs de auditoría solo para admin
 app.use('/api/clients', clientRoutes_1.default); // Permitir sin autenticación para facilitar auto-registro
 app.get('/', (req, res) => {
     res.send('Backend del sistema de despachos funcionando!');

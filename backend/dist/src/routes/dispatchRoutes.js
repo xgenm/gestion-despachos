@@ -14,6 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const database_1 = __importDefault(require("../db/database"));
+const auditMiddleware_1 = require("../middleware/auditMiddleware");
 const router = (0, express_1.Router)();
 // Almacenamiento simulado para modo desarrollo
 let devDispatches = [];
@@ -94,7 +95,12 @@ router.post('/', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                  VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) RETURNING id`;
         const params = [despachoNo, fecha, hora, camion, placa, color, ficha, JSON.stringify(materials), cliente, celular, recibido, total, userId, equipmentId, operatorId];
         const result = yield client.query(sql, params);
-        res.json({ id: result.rows[0].id });
+        const dispatchId = result.rows[0].id;
+        // Registrar en auditoría
+        if (req.user) {
+            yield (0, auditMiddleware_1.logManualAction)(req.user.id, req.user.username, 'CREATE', 'dispatch', dispatchId, { despachoNo, cliente, total }, req);
+        }
+        res.json({ id: dispatchId });
     }
     catch (err) {
         console.error('Error al crear despacho:', err);
@@ -104,8 +110,13 @@ router.post('/', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         client.release();
     }
 }));
-// DELETE /api/dispatches/:id
+// DELETE /api/dispatches/:id (solo admin)
 router.delete('/:id', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    // Verificar que el usuario sea admin
+    if (((_a = req.user) === null || _a === void 0 ? void 0 : _a.role) !== 'admin') {
+        return res.status(403).json({ error: 'Acceso denegado. Solo administradores pueden eliminar despachos.' });
+    }
     const id = parseInt(req.params.id);
     // Validación de ID
     if (isNaN(id)) {
@@ -127,6 +138,10 @@ router.delete('/:id', (req, res) => __awaiter(void 0, void 0, void 0, function* 
         const result = yield client.query(sql, [id]);
         if (result.rowCount === 0) {
             return res.status(404).json({ error: 'Despacho no encontrado' });
+        }
+        // Registrar en auditoría
+        if (req.user) {
+            yield (0, auditMiddleware_1.logManualAction)(req.user.id, req.user.username, 'DELETE', 'dispatch', id, { deletedId: id }, req);
         }
         res.json({ message: 'Despacho eliminado correctamente' });
     }

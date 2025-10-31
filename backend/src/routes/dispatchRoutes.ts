@@ -1,5 +1,14 @@
-import { Router } from 'express';
+import { Router, Request } from 'express';
 import db from '../db/database';
+import { logManualAction } from '../middleware/auditMiddleware';
+
+interface AuthRequest extends Request {
+  user?: {
+    id: number;
+    username: string;
+    role: string;
+  };
+}
 
 const router = Router();
 
@@ -42,7 +51,7 @@ router.get('/', async (req, res) => {
 });
 
 // POST /api/dispatches
-router.post('/', async (req, res) => {
+router.post('/', async (req: AuthRequest, res) => {
   const { despachoNo, fecha, hora, camion, placa, color, ficha, materials, cliente, celular, recibido, total, userId, equipmentId, operatorId } = req.body;
   
   // Validación básica de datos requeridos
@@ -92,7 +101,22 @@ router.post('/', async (req, res) => {
     const params = [despachoNo, fecha, hora, camion, placa, color, ficha, JSON.stringify(materials), cliente, celular, recibido, total, userId, equipmentId, operatorId];
     
     const result = await client.query(sql, params);
-    res.json({ id: result.rows[0].id });
+    const dispatchId = result.rows[0].id;
+    
+    // Registrar en auditoría
+    if (req.user) {
+      await logManualAction(
+        req.user.id,
+        req.user.username,
+        'CREATE',
+        'dispatch',
+        dispatchId,
+        { despachoNo, cliente, total },
+        req
+      );
+    }
+    
+    res.json({ id: dispatchId });
   } catch (err) {
     console.error('Error al crear despacho:', err);
     res.status(500).json({ error: 'Error al crear despacho', details: (err as Error).message });
@@ -101,8 +125,12 @@ router.post('/', async (req, res) => {
   }
 });
 
-// DELETE /api/dispatches/:id
-router.delete('/:id', async (req, res) => {
+// DELETE /api/dispatches/:id (solo admin)
+router.delete('/:id', async (req: AuthRequest, res) => {
+  // Verificar que el usuario sea admin
+  if (req.user?.role !== 'admin') {
+    return res.status(403).json({ error: 'Acceso denegado. Solo administradores pueden eliminar despachos.' });
+  }
   const id = parseInt(req.params.id);
   
   // Validación de ID
@@ -130,6 +158,19 @@ router.delete('/:id', async (req, res) => {
     
     if (result.rowCount === 0) {
       return res.status(404).json({ error: 'Despacho no encontrado' });
+    }
+    
+    // Registrar en auditoría
+    if (req.user) {
+      await logManualAction(
+        req.user.id,
+        req.user.username,
+        'DELETE',
+        'dispatch',
+        id,
+        { deletedId: id },
+        req
+      );
     }
     
     res.json({ message: 'Despacho eliminado correctamente' });

@@ -2,6 +2,7 @@ import { Router, Request } from 'express';
 import jwt from 'jsonwebtoken';
 import { UserModel } from '../models/User';
 import authenticateToken from '../middleware/authMiddleware';
+import { logManualAction } from '../middleware/auditMiddleware';
 
 interface AuthRequest extends Request {
   user?: {
@@ -82,6 +83,19 @@ router.post('/register', authenticateToken, async (req: AuthRequest, res) => {
     
     // Crear nuevo usuario con el campo created_by
     const user = await UserModel.createUser(username, password, role, createdBy);
+    
+    // Registrar en auditoría
+    if (createdBy) {
+      await logManualAction(
+        createdBy,
+        req.user?.username || 'unknown',
+        'CREATE',
+        'user',
+        user.id,
+        { username, role },
+        req
+      );
+    }
     
     // Generar token
     const secret = process.env.JWT_SECRET || 'secreto_por_defecto';
@@ -174,6 +188,19 @@ router.delete('/users/:id', authenticateToken, async (req: AuthRequest, res) => 
     
     if (!deleted) {
       return res.status(404).json({ error: 'Usuario no encontrado' });
+    }
+    
+    // Registrar en auditoría
+    if (currentUserId && req.user) {
+      await logManualAction(
+        currentUserId,
+        req.user.username,
+        'DELETE',
+        'user',
+        userId,
+        { deletedUser: userId },
+        req
+      );
     }
     
     res.json({ message: 'Usuario eliminado exitosamente' });

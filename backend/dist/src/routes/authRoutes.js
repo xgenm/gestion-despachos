@@ -16,6 +16,7 @@ const express_1 = require("express");
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const User_1 = require("../models/User");
 const authMiddleware_1 = __importDefault(require("../middleware/authMiddleware"));
+const auditMiddleware_1 = require("../middleware/auditMiddleware");
 const router = (0, express_1.Router)();
 // Usuario de prueba para desarrollo
 const devUser = {
@@ -29,7 +30,7 @@ let devUsers = [devUser];
 let nextDevUserId = 2;
 // Registro de administrador (solo para crear el primer usuario)
 router.post('/register', authMiddleware_1.default, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
+    var _a, _b;
     try {
         const { username, password, role = 'employee' } = req.body;
         const createdBy = (_a = req.user) === null || _a === void 0 ? void 0 : _a.id; // ID del usuario que está creando este empleado
@@ -72,6 +73,10 @@ router.post('/register', authMiddleware_1.default, (req, res) => __awaiter(void 
         }
         // Crear nuevo usuario con el campo created_by
         const user = yield User_1.UserModel.createUser(username, password, role, createdBy);
+        // Registrar en auditoría
+        if (createdBy) {
+            yield (0, auditMiddleware_1.logManualAction)(createdBy, ((_b = req.user) === null || _b === void 0 ? void 0 : _b.username) || 'unknown', 'CREATE', 'user', user.id, { username, role }, req);
+        }
         // Generar token
         const secret = process.env.JWT_SECRET || 'secreto_por_defecto';
         const token = jsonwebtoken_1.default.sign({ id: user.id, username: user.username, role: user.role }, secret, { expiresIn: '24h' });
@@ -149,6 +154,10 @@ router.delete('/users/:id', authMiddleware_1.default, (req, res) => __awaiter(vo
         const deleted = yield User_1.UserModel.deleteUser(userId);
         if (!deleted) {
             return res.status(404).json({ error: 'Usuario no encontrado' });
+        }
+        // Registrar en auditoría
+        if (currentUserId && req.user) {
+            yield (0, auditMiddleware_1.logManualAction)(currentUserId, req.user.username, 'DELETE', 'user', userId, { deletedUser: userId }, req);
         }
         res.json({ message: 'Usuario eliminado exitosamente' });
     }

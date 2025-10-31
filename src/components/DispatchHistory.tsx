@@ -5,6 +5,7 @@ import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import jsPDF from 'jspdf';
 import DispatchDetailModal from './DispatchDetailModal';
+import { useAuth } from '../contexts/AuthContext';
 
 interface Props {
   dispatches: Dispatch[];
@@ -48,6 +49,7 @@ const getMaterialPrice = (id: string) => {
 const DispatchHistory: React.FC<Props> = ({ dispatches, onDelete }) => {
   const [showModal, setShowModal] = useState(false);
   const [selectedDispatch, setSelectedDispatch] = useState<Dispatch | null>(null);
+  const { isAdmin } = useAuth(); // Obtener rol del usuario
 
   const handleExport = () => {
     // Crear datos detallados para exportar
@@ -368,9 +370,12 @@ const DispatchHistory: React.FC<Props> = ({ dispatches, onDelete }) => {
                   <Button variant="info" size="sm" className="me-1" title="Descargar PDF" onClick={() => handlePrintPDF(dispatch)}>
                     PDF
                   </Button>
-                  <Button variant="danger" size="sm" onClick={() => handleDelete(dispatch.id)}>
-                    Eliminar
-                  </Button>
+                  {/* Solo mostrar botón de eliminar a administradores */}
+                  {isAdmin && (
+                    <Button variant="danger" size="sm" onClick={() => handleDelete(dispatch.id)}>
+                      Eliminar
+                    </Button>
+                  )}
                 </td>
               </tr>
             ))}

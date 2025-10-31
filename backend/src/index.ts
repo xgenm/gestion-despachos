@@ -12,6 +12,7 @@ import operatorRoutes from './routes/operatorRoutes';
 import companyRoutes from './routes/companyRoutes';
 import clientRoutes from './routes/clientRoutes';
 import authRoutes from './routes/authRoutes';
+import auditRoutes from './routes/auditRoutes';
 import authenticateToken from './middleware/authMiddleware';
 import checkRole from './middleware/roleMiddleware';
 
@@ -80,6 +81,7 @@ app.post('/api/test-login', async (req, res) => {
 app.use('/api/auth', authRoutes);
 
 // Rutas protegidas (requieren autenticación)
+// GET permitido para todos, POST/PUT/DELETE solo para admin
 app.use('/api/dispatches', authenticateToken, dispatchRoutes);
 
 // Rutas protegidas que requieren rol de administrador
@@ -87,6 +89,7 @@ app.use('/api/users', checkRole('admin'), userRoutes);
 app.use('/api/equipment', checkRole('admin'), equipmentRoutes);
 app.use('/api/operators', checkRole('admin'), operatorRoutes);
 app.use('/api/companies', checkRole('admin'), companyRoutes);
+app.use('/api/audit', checkRole('admin'), auditRoutes); // Logs de auditoría solo para admin
 app.use('/api/clients', clientRoutes); // Permitir sin autenticación para facilitar auto-registro
 
 app.get('/', (req, res) => {
