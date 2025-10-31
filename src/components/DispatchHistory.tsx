@@ -189,6 +189,9 @@ const DispatchHistory: React.FC<Props> = ({ dispatches, onDelete }) => {
 
   const handlePrintPDF = (dispatch: Dispatch) => {
     try {
+      console.log('PDF - Dispatch completo:', dispatch);
+      console.log('PDF - userName:', dispatch.userName);
+      
       const doc = new jsPDF();
       const pageHeight = doc.internal.pageSize.getHeight();
       let yPosition = 20;
