@@ -51,9 +51,46 @@ const DispatchForm: React.FC<Props> = ({ onSubmit }) => {
   const [operators, setOperators] = useState<AdminData[]>([]);
 
   useEffect(() => {
-    fetch(`${API_URL}/users`).then(res => res.json()).then(data => setUsers(data.data || []));
-    fetch(`${API_URL}/equipment`).then(res => res.json()).then(data => setEquipment(data.data || []));
-    fetch(`${API_URL}/operators`).then(res => res.json()).then(data => setOperators(data.data || []));
+    const token = localStorage.getItem('token');
+    
+    if (!token) {
+      console.warn('⚠️ No hay token de autenticación. Redirigiendo al login...');
+      window.location.href = '/login';
+      return;
+    }
+
+    const headers = {
+      'Authorization': `Bearer ${token}`
+    };
+
+    // Cargar datos con manejo de errores 401
+    fetch(`${API_URL}/users`, { headers })
+      .then(res => {
+        if (res.status === 401) {
+          console.error('❌ Token expirado o inválido. Redirigiendo al login...');
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          window.location.href = '/login';
+          throw new Error('Unauthorized');
+        }
+        return res.json();
+      })
+      .then(data => setUsers(data.data || []))
+      .catch(err => {
+        if (err.message !== 'Unauthorized') {
+          console.error('Error al cargar usuarios:', err);
+        }
+      });
+
+    fetch(`${API_URL}/equipment`, { headers })
+      .then(res => res.status === 401 ? Promise.reject('Unauthorized') : res.json())
+      .then(data => setEquipment(data.data || []))
+      .catch(err => err !== 'Unauthorized' && console.error('Error al cargar equipos:', err));
+
+    fetch(`${API_URL}/operators`, { headers })
+      .then(res => res.status === 401 ? Promise.reject('Unauthorized') : res.json())
+      .then(data => setOperators(data.data || []))
+      .catch(err => err !== 'Unauthorized' && console.error('Error al cargar operarios:', err));
   }, []);
 
   // Auto-seleccionar el usuario logueado en "Atendido por" (garantizar que siempre tenga valor)

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Form, Button, Container, Row, Col, Card, Alert } from 'react-bootstrap';
 import { useAuth } from '../contexts/AuthContext';
 import './Login.css';
@@ -12,6 +12,13 @@ const Login: React.FC = () => {
   const { login } = useAuth();
 
   const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3002/api';
+
+  // Limpiar tokens inválidos al cargar el componente de login
+  useEffect(() => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    console.log('🧹 Tokens antiguos limpiados');
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
