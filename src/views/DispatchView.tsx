@@ -20,6 +20,7 @@ const DispatchView: React.FC = () => {
         }
       });
       const data = await response.json();
+      console.log('Datos recibidos del backend:', data.data[0]); // Ver primer despacho
       const formattedData = data.data.map((d: any) => ({
         ...d, 
         materials: typeof d.materials === 'string' ? JSON.parse(d.materials) : d.materials,
