@@ -23,7 +23,7 @@ const DispatchView: React.FC = () => {
       console.log('📥 Despachos recibidos del backend:', data.data.slice(0, 2)); // Mostrar primeros 2 para debugging
       
       const formattedData = data.data.map((d: any) => ({
-        ...d, 
+        ...d, // ← Mantener TODOS los campos originales, incluido despachoNo y userName
         materials: typeof d.materials === 'string' ? JSON.parse(d.materials) : d.materials,
         id: Number(d.id),
         userId: Number(d.userId),

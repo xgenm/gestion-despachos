@@ -41,7 +41,39 @@ router.get('/', async (req, res) => {
       ORDER BY d.fecha DESC
     `;
     const result = await client.query(sql);
-    res.json({ data: result.rows });
+    
+    // Mapear las columnas de PostgreSQL (minúsculas) al formato esperado por el frontend (camelCase)
+    const mappedData = result.rows.map(row => ({
+      id: row.id,
+      despachoNo: row.despachono,
+      fecha: row.fecha,
+      hora: row.hora,
+      camion: row.camion,
+      placa: row.placa,
+      color: row.color,
+      ficha: row.ficha,
+      materials: row.materials,
+      cliente: row.cliente,
+      celular: row.celular,
+      total: row.total,
+      userId: row.userid,
+      equipmentId: row.equipmentid,
+      operatorId: row.operatorid,
+      userName: row.username,
+      equipmentName: row.equipmentname,
+      operatorName: row.operatorname
+    }));
+    
+    // Log para debugging
+    if (mappedData.length > 0) {
+      console.log('📦 Primer despacho enviado al frontend:', {
+        despachoNo: mappedData[0].despachoNo,
+        userName: mappedData[0].userName,
+        userId: mappedData[0].userId
+      });
+    }
+    
+    res.json({ data: mappedData });
   } catch (err) {
     console.error('Error al obtener despachos:', err);
     res.status(500).json({ error: 'Error al obtener despachos', details: (err as Error).message });
