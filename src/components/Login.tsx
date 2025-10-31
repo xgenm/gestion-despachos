@@ -45,9 +45,9 @@ const Login: React.FC = () => {
 
   return (
     <div className="login-container">
-      <Container fluid className="h-100">
-        <Row className="h-100 align-items-center justify-content-center">
-          <Col xs={11} sm={10} md={6} lg={5} xl={4}>
+      <Container fluid className="h-100 p-0">
+        <Row className="h-100 align-items-center justify-content-center g-0">
+          <Col xs={12} sm={11} md={8} lg={6} xl={5}>
             <Card className="login-card shadow-lg">
               <Card.Body className="p-4 p-md-5">
                 <div className="text-center mb-4">
@@ -74,7 +74,7 @@ const Login: React.FC = () => {
                       </svg>
                       <Form.Control
                         type="text"
-                        placeholder="email or username"
+                        placeholder="Nombre de usuario"
                         value={username}
                         onChange={(e) => setUsername(e.target.value)}
                         required
@@ -92,7 +92,7 @@ const Login: React.FC = () => {
                       </svg>
                       <Form.Control
                         type="password"
-                        placeholder="password"
+                        placeholder="Contraseña"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         required
@@ -102,11 +102,7 @@ const Login: React.FC = () => {
                     </div>
                   </Form.Group>
 
-                  <div className="forgot-password">
-                    <a href="#">forgot password?</a>
-                  </div>
-
-                  <div className="d-grid">
+                  <div className="d-grid mt-4">
                     <Button 
                       variant="primary" 
                       type="submit" 
@@ -117,18 +113,14 @@ const Login: React.FC = () => {
                       {loading ? (
                         <>
                           <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                          Iniciando...
+                          Iniciando sesión...
                         </>
                       ) : (
-                        'Sign in'
+                        'Iniciar Sesión'
                       )}
                     </Button>
                   </div>
                 </Form>
-
-                <div className="register-link">
-                  <a href="#">register</a>
-                </div>
               </Card.Body>
             </Card>
           </Col>

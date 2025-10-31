@@ -35,6 +35,39 @@ async function initAdmin() {
       console.log('✅ Tabla users creada');
     }
 
+    // Crear tabla dispatches si no existe
+    const dispatchesCheck = await client.query(`
+      SELECT EXISTS (
+        SELECT FROM information_schema.tables 
+        WHERE table_name = 'dispatches'
+      );
+    `);
+
+    if (!dispatchesCheck.rows[0].exists) {
+      await client.query(`
+        CREATE TABLE dispatches (
+          id SERIAL PRIMARY KEY,
+          "despachoNo" VARCHAR(50) NOT NULL,
+          fecha DATE NOT NULL,
+          hora TIME NOT NULL,
+          camion VARCHAR(100) NOT NULL,
+          placa VARCHAR(20) NOT NULL,
+          color VARCHAR(50),
+          ficha VARCHAR(50),
+          materials JSONB,
+          cliente VARCHAR(255) NOT NULL,
+          celular VARCHAR(20),
+          recibido VARCHAR(255),
+          total DECIMAL(10,2) DEFAULT 0,
+          "userId" INTEGER,
+          "equipmentId" INTEGER,
+          "operatorId" INTEGER,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+      `);
+      console.log('✅ Tabla dispatches creada');
+    }
+
     // Verificar si el usuario admin ya existe
     const userCheck = await client.query(
       'SELECT * FROM users WHERE username = $1',
