@@ -51,14 +51,12 @@ const Login: React.FC = () => {
             <Card className="login-card shadow-lg">
               <Card.Body className="p-4 p-md-5">
                 <div className="text-center mb-4">
-                  <div className="login-icon mb-3">
-                    <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <div className="login-icon mb-4">
+                    <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                       <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
                       <circle cx="12" cy="7" r="4"/>
                     </svg>
                   </div>
-                  <h3 className="login-title mb-2">Gestión de Despachos</h3>
-                  <p className="login-subtitle text-muted">Inicia sesión para continuar</p>
                 </div>
 
                 {error && (
@@ -68,8 +66,7 @@ const Login: React.FC = () => {
                 )}
 
                 <Form onSubmit={handleSubmit}>
-                  <Form.Group className="mb-4" controlId="username">
-                    <Form.Label className="login-label">Usuario</Form.Label>
+                  <Form.Group className="mb-3" controlId="username">
                     <div className="input-with-icon">
                       <svg className="input-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
@@ -77,7 +74,7 @@ const Login: React.FC = () => {
                       </svg>
                       <Form.Control
                         type="text"
-                        placeholder="Nombre de usuario"
+                        placeholder="email or username"
                         value={username}
                         onChange={(e) => setUsername(e.target.value)}
                         required
@@ -87,8 +84,7 @@ const Login: React.FC = () => {
                     </div>
                   </Form.Group>
 
-                  <Form.Group className="mb-4" controlId="password">
-                    <Form.Label className="login-label">Contraseña</Form.Label>
+                  <Form.Group className="mb-3" controlId="password">
                     <div className="input-with-icon">
                       <svg className="input-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
@@ -96,7 +92,7 @@ const Login: React.FC = () => {
                       </svg>
                       <Form.Control
                         type="password"
-                        placeholder="Contraseña"
+                        placeholder="password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         required
@@ -105,6 +101,10 @@ const Login: React.FC = () => {
                       />
                     </div>
                   </Form.Group>
+
+                  <div className="forgot-password">
+                    <a href="#">forgot password?</a>
+                  </div>
 
                   <div className="d-grid">
                     <Button 
@@ -117,17 +117,17 @@ const Login: React.FC = () => {
                       {loading ? (
                         <>
                           <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                          Iniciando sesión...
+                          Iniciando...
                         </>
                       ) : (
-                        'Iniciar Sesión'
+                        'Sign in'
                       )}
                     </Button>
                   </div>
                 </Form>
 
-                <div className="text-center mt-4">
-                  <small className="text-muted">v1.0.0 - Sistema de Gestión</small>
+                <div className="register-link">
+                  <a href="#">register</a>
                 </div>
               </Card.Body>
             </Card>
