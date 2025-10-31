@@ -56,8 +56,13 @@ const DispatchHistory: React.FC<Props> = ({ dispatches, onDelete }) => {
     try {
       // Crear datos detallados para exportar
       const worksheetData = dispatches.map(d => {
+        // Asegurar que materials es un array
+        const materials = Array.isArray(d.materials) 
+          ? d.materials 
+          : (typeof d.materials === 'string' ? JSON.parse(d.materials) : []);
+        
         // Calcular detalles de materiales
-        const materialDetails = d.materials.map(material => {
+        const materialDetails = materials.map((material: { id: string; quantity: number }) => {
           const materialName = getMaterialName(material.id);
           const price = getMaterialPrice(material.id);
           const total = price * material.quantity;
@@ -190,6 +195,11 @@ const DispatchHistory: React.FC<Props> = ({ dispatches, onDelete }) => {
       const pageHeight = doc.internal.pageSize.getHeight();
       let yPosition = 20;
 
+      // Asegurar que materials es un array
+      const materials = Array.isArray(dispatch.materials) 
+        ? dispatch.materials 
+        : (typeof dispatch.materials === 'string' ? JSON.parse(dispatch.materials) : []);
+
       // Encabezado
       doc.setFontSize(16);
       doc.text('Mina "SALUDALSA"', 105, yPosition, { align: 'center' });
@@ -222,7 +232,7 @@ const DispatchHistory: React.FC<Props> = ({ dispatches, onDelete }) => {
       yPosition += 5;
 
       // Tabla de materiales
-      const tableData = dispatch.materials.map(material => [
+      const tableData = materials.map((material: { id: string; quantity: number }) => [
         getMaterialName(material.id),
         material.quantity.toString(),
         `RD$ ${getMaterialPrice(material.id).toFixed(2)}`,
@@ -262,6 +272,11 @@ const DispatchHistory: React.FC<Props> = ({ dispatches, onDelete }) => {
 
   const handlePrint = (dispatch: Dispatch) => {
     try {
+      // Asegurar que materials es un array
+      const materials = Array.isArray(dispatch.materials) 
+        ? dispatch.materials 
+        : (typeof dispatch.materials === 'string' ? JSON.parse(dispatch.materials) : []);
+      
       // Crear una ventana de impresión
       const printWindow = window.open('', '_blank');
       if (printWindow) {
@@ -310,7 +325,7 @@ const DispatchHistory: React.FC<Props> = ({ dispatches, onDelete }) => {
                   </tr>
                 </thead>
                 <tbody>
-                  ${dispatch.materials.map(material => {
+                  ${materials.map((material: { id: string; quantity: number }) => {
                     const materialName = getMaterialName(material.id);
                     const price = getMaterialPrice(material.id);
                     const total = price * material.quantity;

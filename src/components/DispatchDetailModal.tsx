@@ -46,11 +46,16 @@ const getMaterialPrice = (id: string) => {
 const DispatchDetailModal: React.FC<DispatchDetailModalProps> = ({ dispatch, show, onHide, onPrint }) => {
   if (!show || !dispatch) return null;
 
+  // Asegurar que materials es un array
+  const materials = Array.isArray(dispatch.materials) 
+    ? dispatch.materials 
+    : (typeof dispatch.materials === 'string' ? JSON.parse(dispatch.materials) : []);
+
   // Formatear la fecha
   const formattedDate = new Date(dispatch.fecha).toLocaleDateString();
 
   // Calcular totales por material
-  const materialTotals = dispatch.materials.map(material => {
+  const materialTotals = materials.map((material: { id: string; quantity: number }) => {
     const materialName = getMaterialName(material.id);
     const price = getMaterialPrice(material.id);
     const total = price * material.quantity;
@@ -102,7 +107,7 @@ const DispatchDetailModal: React.FC<DispatchDetailModalProps> = ({ dispatch, sho
                 </tr>
               </thead>
               <tbody>
-                {materialTotals.map((material, index) => (
+                {materialTotals.map((material: any, index: number) => (
                   <tr key={index}>
                     <td>{material.name}</td>
                     <td>{material.quantity}</td>
