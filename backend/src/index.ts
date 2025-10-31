@@ -84,11 +84,11 @@ app.use('/api/auth', authRoutes);
 // GET permitido para todos, POST/PUT/DELETE solo para admin
 app.use('/api/dispatches', authenticateToken, dispatchRoutes);
 
-// Rutas protegidas que requieren rol de administrador
-app.use('/api/users', checkRole('admin'), userRoutes);
-app.use('/api/equipment', checkRole('admin'), equipmentRoutes);
-app.use('/api/operators', checkRole('admin'), operatorRoutes);
-app.use('/api/companies', checkRole('admin'), companyRoutes);
+// Rutas de usuarios, equipos, operarios: GET para todos autenticados, resto solo admin
+app.use('/api/users', authenticateToken, userRoutes);
+app.use('/api/equipment', authenticateToken, equipmentRoutes);
+app.use('/api/operators', authenticateToken, operatorRoutes);
+app.use('/api/companies', authenticateToken, companyRoutes);
 app.use('/api/audit', checkRole('admin'), auditRoutes); // Logs de auditoría solo para admin
 app.use('/api/clients', clientRoutes); // Permitir sin autenticación para facilitar auto-registro
 

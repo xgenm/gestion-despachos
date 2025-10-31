@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import db from '../db/database';
+import checkRole from '../middleware/roleMiddleware';
 
 const router = Router();
 
@@ -18,8 +19,8 @@ router.get('/', async (req, res) => {
   }
 });
 
-// POST new user
-router.post('/', async (req, res) => {
+// POST new user (solo admin)
+router.post('/', checkRole('admin'), async (req, res) => {
   const { name } = req.body;
   
   // Validación básica
@@ -43,8 +44,8 @@ router.post('/', async (req, res) => {
   }
 });
 
-// DELETE user
-router.delete('/:id', async (req, res) => {
+// DELETE user (solo admin)
+router.delete('/:id', checkRole('admin'), async (req, res) => {
   const id = parseInt(req.params.id);
   
   // Validación de ID
