@@ -14,6 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const database_1 = __importDefault(require("../db/database"));
+const roleMiddleware_1 = __importDefault(require("../middleware/roleMiddleware"));
 const router = (0, express_1.Router)();
 // Almacenamiento simulado para modo desarrollo
 let devEquipment = [
@@ -40,8 +41,8 @@ router.get('/', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         client.release();
     }
 }));
-// POST new equipment
-router.post('/', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+// POST new equipment (solo admin)
+router.post('/', (0, roleMiddleware_1.default)('admin'), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { name } = req.body;
     // Validación básica
     if (!name || name.trim() === '') {
@@ -70,8 +71,8 @@ router.post('/', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         client.release();
     }
 }));
-// DELETE equipment
-router.delete('/:id', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+// DELETE equipment (solo admin)
+router.delete('/:id', (0, roleMiddleware_1.default)('admin'), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const id = parseInt(req.params.id);
     // Validación de ID
     if (isNaN(id)) {

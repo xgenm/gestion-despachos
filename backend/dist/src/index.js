@@ -55,13 +55,23 @@ app.get('/api/test-db', (req, res) => __awaiter(void 0, void 0, void 0, function
             adminUser: userResult.rows[0],
             env: {
                 hasDatabaseUrl: !!process.env.DATABASE_URL,
+                databaseUrlPreview: process.env.DATABASE_URL ? process.env.DATABASE_URL.substring(0, 50) + '...' : 'NO CONFIGURADA',
                 hasJwtSecret: !!process.env.JWT_SECRET,
-                nodeEnv: process.env.NODE_ENV
+                jwtSecretPreview: process.env.JWT_SECRET ? process.env.JWT_SECRET.substring(0, 10) + '...' : 'NO CONFIGURADO',
+                nodeEnv: process.env.NODE_ENV,
+                disableAuth: process.env.DISABLE_AUTH
             }
         });
     }
     catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(500).json({
+            error: error.message,
+            env: {
+                hasDatabaseUrl: !!process.env.DATABASE_URL,
+                hasJwtSecret: !!process.env.JWT_SECRET,
+                nodeEnv: process.env.NODE_ENV
+            }
+        });
     }
 }));
 // Endpoint de prueba
@@ -86,11 +96,11 @@ app.use('/api/auth', authRoutes_1.default);
 // Rutas protegidas (requieren autenticación)
 // GET permitido para todos, POST/PUT/DELETE solo para admin
 app.use('/api/dispatches', authMiddleware_1.default, dispatchRoutes_1.default);
-// Rutas protegidas que requieren rol de administrador
-app.use('/api/users', (0, roleMiddleware_1.default)('admin'), userRoutes_1.default);
-app.use('/api/equipment', (0, roleMiddleware_1.default)('admin'), equipmentRoutes_1.default);
-app.use('/api/operators', (0, roleMiddleware_1.default)('admin'), operatorRoutes_1.default);
-app.use('/api/companies', (0, roleMiddleware_1.default)('admin'), companyRoutes_1.default);
+// Rutas de usuarios, equipos, operarios: GET para todos autenticados, resto solo admin
+app.use('/api/users', authMiddleware_1.default, userRoutes_1.default);
+app.use('/api/equipment', authMiddleware_1.default, equipmentRoutes_1.default);
+app.use('/api/operators', authMiddleware_1.default, operatorRoutes_1.default);
+app.use('/api/companies', authMiddleware_1.default, companyRoutes_1.default);
 app.use('/api/audit', (0, roleMiddleware_1.default)('admin'), auditRoutes_1.default); // Logs de auditoría solo para admin
 app.use('/api/clients', clientRoutes_1.default); // Permitir sin autenticación para facilitar auto-registro
 app.get('/', (req, res) => {
