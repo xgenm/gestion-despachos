@@ -82,6 +82,21 @@ const initializeTables = async () => {
       )
     `);
     
+    // Tabla de Camiones
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS camiones (
+        id SERIAL PRIMARY KEY,
+        placa TEXT NOT NULL UNIQUE,
+        marca TEXT,
+        color TEXT,
+        m3 DECIMAL(10, 2),
+        ficha TEXT,
+        estado TEXT DEFAULT 'activo',
+        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    
     // Inicializar tabla de administradores
     await UserModel.createTable();
     

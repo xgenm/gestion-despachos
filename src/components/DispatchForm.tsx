@@ -1,7 +1,8 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Form, Button, Row, Col, Card, InputGroup } from 'react-bootstrap';
 import { Dispatch } from '../types';
 import { useAuth } from '../contexts/AuthContext';
+import CaminoAutocomplete from './CaminoAutocomplete';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3002/api';
 
@@ -18,11 +19,13 @@ const initialFormState = {
   placa: '',
   color: '',
   ficha: '',
+  m3: 0, // Nuevo campo
   cliente: '',
   celular: '',
   userId: 0,
   equipmentId: 0,
   operatorId: 0,
+  caminoId: 0, // Nuevo campo
 };
 
 const materialsData = [
@@ -45,6 +48,7 @@ interface Props {
 const DispatchForm: React.FC<Props> = ({ onSubmit }) => {
   const { user } = useAuth(); // Obtener usuario logueado
   const [formData, setFormData] = useState(initialFormState);
+  const [caminoData, setCaminoData] = useState<any>(null); // Datos del camión encontrado
   const [selectedMaterials, setSelectedMaterials] = useState<Record<string, { selected: boolean; quantity: number }>>({});
   const [users, setUsers] = useState<AdminData[]>([]);
   const [equipment, setEquipment] = useState<AdminData[]>([]);
