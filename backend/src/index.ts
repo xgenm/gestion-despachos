@@ -49,12 +49,22 @@ app.get('/api/test-db', async (req, res) => {
       adminUser: userResult.rows[0],
       env: {
         hasDatabaseUrl: !!process.env.DATABASE_URL,
+        databaseUrlPreview: process.env.DATABASE_URL ? process.env.DATABASE_URL.substring(0, 50) + '...' : 'NO CONFIGURADA',
+        hasJwtSecret: !!process.env.JWT_SECRET,
+        jwtSecretPreview: process.env.JWT_SECRET ? process.env.JWT_SECRET.substring(0, 10) + '...' : 'NO CONFIGURADO',
+        nodeEnv: process.env.NODE_ENV,
+        disableAuth: process.env.DISABLE_AUTH
+      }
+    });
+  } catch (error: any) {
+    res.status(500).json({ 
+      error: error.message,
+      env: {
+        hasDatabaseUrl: !!process.env.DATABASE_URL,
         hasJwtSecret: !!process.env.JWT_SECRET,
         nodeEnv: process.env.NODE_ENV
       }
     });
-  } catch (error: any) {
-    res.status(500).json({ error: error.message });
   }
 });
 
