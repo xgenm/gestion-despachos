@@ -42,8 +42,8 @@ router.get('/', authenticateToken, async (req: AuthRequest, res: Response) => {
   }
 });
 
-// POST /camiones - Crear nuevo camión (solo admin)
-router.post('/', authenticateToken, checkRole('admin'), async (req: AuthRequest, res: Response) => {
+// POST /camiones - Crear nuevo camión (empleado crea, admin puede editar después)
+router.post('/', authenticateToken, async (req: AuthRequest, res: Response) => {
   try {
     const { placa, marca, color, m3, ficha } = req.body;
 
@@ -76,7 +76,7 @@ router.post('/', authenticateToken, checkRole('admin'), async (req: AuthRequest,
         [placa.toUpperCase(), marca || '', color || '', parseFloat(m3), ficha || '']
       );
 
-      console.log('✅ Camión creado:', result.rows[0]);
+      console.log('✅ Camión creado por', req.user?.role, ':', result.rows[0]);
       res.status(201).json(result.rows[0]);
     } finally {
       client.release();

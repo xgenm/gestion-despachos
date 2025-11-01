@@ -148,7 +148,7 @@ const CaminoAutocomplete: React.FC<Props> = ({
         </Alert>
       )}
 
-      {showNewCaminoForm && user?.role === 'admin' && (
+      {showNewCaminoForm && (
         <Form onSubmit={handleCreateCamino} className="mt-3 p-3 border rounded bg-white">
           <h6>Crear Nuevo Camión</h6>
           <Form.Group className="mb-2">
