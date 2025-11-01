@@ -53,6 +53,7 @@ const DispatchForm: React.FC<Props> = ({ onSubmit }) => {
   const [users, setUsers] = useState<AdminData[]>([]);
   const [equipment, setEquipment] = useState<AdminData[]>([]);
   const [operators, setOperators] = useState<AdminData[]>([]);
+  const [capacidadExcedida, setCapacidadExcedida] = useState(false); // Nueva validación
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -104,6 +105,17 @@ const DispatchForm: React.FC<Props> = ({ onSubmit }) => {
     }
   }, [user]);
 
+  // Calcular M³ total seleccionado
+  const m3Seleccionados = useMemo(() => {
+    return Object.keys(selectedMaterials).reduce((acc, key) => {
+      if (selectedMaterials[key].selected) {
+        return acc + selectedMaterials[key].quantity;
+      }
+      return acc;
+    }, 0);
+  }, [selectedMaterials]);
+
+  // Calcular total: Precio × M³ seleccionados
   const total = useMemo(() => {
     return Object.keys(selectedMaterials).reduce((acc, key) => {
       const material = materialsData.find(m => m.id === key);
@@ -113,6 +125,13 @@ const DispatchForm: React.FC<Props> = ({ onSubmit }) => {
       return acc;
     }, 0);
   }, [selectedMaterials]);
+
+  // Validar si se excede la capacidad del camión
+  useEffect(() => {
+    if (caminoData && formData.m3 > 0) {
+      setCapacidadExcedida(m3Seleccionados > formData.m3);
+    }
+  }, [m3Seleccionados, formData.m3, caminoData]);
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { id, value } = event.target;
@@ -310,7 +329,12 @@ const DispatchForm: React.FC<Props> = ({ onSubmit }) => {
 
           <hr />
 
-          <h5>Materiales</h5>
+          <h5>Materiales - Capacidad: {caminoData ? `${m3Seleccionados.toFixed(1)} / ${formData.m3.toFixed(1)} M³` : 'Selecciona un camión'}</h5>
+          {capacidadExcedida && (
+            <div className="alert alert-danger" role="alert">
+              ⚠️ <strong>Advertencia:</strong> Has seleccionado {m3Seleccionados.toFixed(1)} M³ pero el camión solo tiene capacidad para {formData.m3.toFixed(1)} M³. Por favor, reduce la cantidad.
+            </div>
+          )}
           <Row>
             {materialsData.map(material => (
               <Col md={6} key={material.id} className="mb-2">
@@ -319,14 +343,21 @@ const DispatchForm: React.FC<Props> = ({ onSubmit }) => {
                     checked={selectedMaterials[material.id]?.selected || false}
                     onChange={() => handleMaterialSelect(material.id)} 
                   />
-                  <InputGroup.Text>{material.label}</InputGroup.Text>
+                  <InputGroup.Text>{material.label} (RD${material.price}/M³)</InputGroup.Text>
                   {selectedMaterials[material.id]?.selected && (
-                    <Form.Control
-                      type="number"
-                      placeholder="M³"
-                      value={selectedMaterials[material.id]?.quantity || ''}
-                      onChange={(e) => handleQuantityChange(material.id, e.target.value)}
-                    />
+                    <>
+                      <Form.Control
+                        type="number"
+                        placeholder="M³"
+                        value={selectedMaterials[material.id]?.quantity || ''}
+                        onChange={(e) => handleQuantityChange(material.id, e.target.value)}
+                        min="0"
+                        step="0.1"
+                      />
+                      <InputGroup.Text>
+                        = RD${(material.price * (selectedMaterials[material.id]?.quantity || 0)).toLocaleString('es-DO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </InputGroup.Text>
+                    </>
                   )}
                 </InputGroup>
               </Col>
@@ -353,7 +384,11 @@ const DispatchForm: React.FC<Props> = ({ onSubmit }) => {
             </Form.Group>
           </Row>
 
-          <Button variant="primary" type="submit">
+          <Button 
+            variant="primary" 
+            type="submit"
+            disabled={capacidadExcedida || m3Seleccionados === 0}
+          >
             Guardar Despacho
           </Button>
         </Form>
