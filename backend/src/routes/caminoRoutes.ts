@@ -9,8 +9,8 @@ interface AuthRequest extends Request {
 
 const router = Router();
 
-// GET /camiones?placa=XXX - Buscar camión por placa
-router.get('/', authenticateToken, async (req: AuthRequest, res: Response) => {
+// GET /camiones?placa=XXX - Buscar camión por placa (público, sin autenticación)
+router.get('/', async (req: AuthRequest, res: Response) => {
   try {
     const { placa } = req.query;
 
