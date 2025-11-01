@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Form, Button, Row, Col, Card, InputGroup } from 'react-bootstrap';
+import { useState, useEffect, useMemo } from 'react';
 import { Dispatch } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -176,11 +177,23 @@ const DispatchForm: React.FC<Props> = ({ onSubmit }) => {
             </Form.Group>
             <Form.Group as={Col} controlId="fecha">
               <Form.Label>Fecha</Form.Label>
-              <Form.Control type="date" value={formData.fecha} onChange={handleInputChange} />
+              <Form.Control 
+                type="date" 
+                value={formData.fecha} 
+                onChange={handleInputChange}
+                readOnly={user?.role === 'employee'}
+              />
+              {user?.role === 'employee' && <Form.Text className="text-muted">No puedes cambiar la fecha</Form.Text>}
             </Form.Group>
             <Form.Group as={Col} controlId="hora">
               <Form.Label>Hora</Form.Label>
-              <Form.Control type="time" value={formData.hora} onChange={handleInputChange} />
+              <Form.Control 
+                type="time" 
+                value={formData.hora} 
+                onChange={handleInputChange}
+                readOnly={user?.role === 'employee'}
+              />
+              {user?.role === 'employee' && <Form.Text className="text-muted">No puedes cambiar la hora</Form.Text>}
             </Form.Group>
           </Row>
 

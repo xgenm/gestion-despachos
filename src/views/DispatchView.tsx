@@ -3,11 +3,13 @@ import { Container, Row, Col } from 'react-bootstrap';
 import DispatchForm from '../components/DispatchForm';
 import DispatchFilter from '../components/DispatchFilter';
 import DispatchHistory from '../components/DispatchHistory';
+import { useAuth } from '../contexts/AuthContext';
 import { Dispatch } from '../types';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3002/api';
 
 const DispatchView: React.FC = () => {
+  const { isAdmin } = useAuth();
   const [dispatches, setDispatches] = useState<Dispatch[]>([]);
   const [filteredDispatches, setFilteredDispatches] = useState<Dispatch[]>([]);
 
@@ -154,8 +156,13 @@ const DispatchView: React.FC = () => {
       
       <Row className="mt-4">
         <Col md={12}>
-          <DispatchFilter dispatches={dispatches} onFilter={handleFilter} />
-          <DispatchHistory dispatches={filteredDispatches} onDelete={deleteDispatch} />
+          {/* Filtro y exportar solo visible para admin */}
+          {isAdmin && (
+            <>
+              <DispatchFilter dispatches={dispatches} onFilter={handleFilter} />
+            </>
+          )}
+          <DispatchHistory dispatches={filteredDispatches} onDelete={deleteDispatch} isAdmin={isAdmin} />
         </Col>
       </Row>
     </Container>

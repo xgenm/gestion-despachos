@@ -11,46 +11,48 @@ import { useAuth } from '../contexts/AuthContext';
 interface Props {
   dispatches: Dispatch[];
   onDelete?: (id: number) => void;
+  isAdmin?: boolean;
 }
 
-// Función para obtener el nombre del material
-const getMaterialName = (id: string) => {
-  const materials: Record<string, string> = {
-    'arenaLavada': 'Arena lavada',
-    'arenaSinLavar': 'Arena sin lavar',
-    'grava': 'Grava',
-    'subBase': 'Sub-base',
-    'gravaArena': 'Grava Arena',
-    'granzote': 'Granzote',
-    'gravillin': 'Gravillín',
-    'cascajoGris': 'Cascajo gris (Relleno)',
-    'base': 'Base',
-    'rellenoAmarillento': 'Relleno amarillento'
-  };
-  return materials[id] || id;
-};
+// ... existing code ...
 
-// Función para obtener el precio del material
-const getMaterialPrice = (id: string) => {
-  const prices: Record<string, number> = {
-    'arenaLavada': 1500,
-    'arenaSinLavar': 1200,
-    'grava': 1800,
-    'subBase': 1000,
-    'gravaArena': 1600,
-    'granzote': 2000,
-    'gravillin': 2200,
-    'cascajoGris': 800,
-    'base': 1100,
-    'rellenoAmarillento': 700
-  };
-  return prices[id] || 0;
-};
-
-const DispatchHistory: React.FC<Props> = ({ dispatches, onDelete }) => {
+const DispatchHistory: React.FC<Props> = ({ dispatches, onDelete, isAdmin = false }) => {
   const [showModal, setShowModal] = useState(false);
   const [selectedDispatch, setSelectedDispatch] = useState<Dispatch | null>(null);
-  const { isAdmin } = useAuth(); // Obtener rol del usuario
+
+  // Función para obtener el nombre del material
+  const getMaterialName = (id: string) => {
+    const materials: Record<string, string> = {
+      'arenaLavada': 'Arena lavada',
+      'arenaSinLavar': 'Arena sin lavar',
+      'grava': 'Grava',
+      'subBase': 'Sub-base',
+      'gravaArena': 'Grava Arena',
+      'granzote': 'Granzote',
+      'gravillin': 'Gravillín',
+      'cascajoGris': 'Cascajo gris (Relleno)',
+      'base': 'Base',
+      'rellenoAmarillento': 'Relleno amarillento'
+    };
+    return materials[id] || id;
+  };
+
+  // Función para obtener el precio del material
+  const getMaterialPrice = (id: string) => {
+    const prices: Record<string, number> = {
+      'arenaLavada': 1500,
+      'arenaSinLavar': 1200,
+      'grava': 1800,
+      'subBase': 1000,
+      'gravaArena': 1600,
+      'granzote': 2000,
+      'gravillin': 2200,
+      'cascajoGris': 800,
+      'base': 1100,
+      'rellenoAmarillento': 700
+    };
+    return prices[id] || 0;
+  };
 
   const handleExport = () => {
     try {
@@ -373,10 +375,13 @@ const DispatchHistory: React.FC<Props> = ({ dispatches, onDelete }) => {
       <Card.Body>
         <div className="d-flex justify-content-between align-items-center mb-3">
           <Card.Title className="mb-0">Historial de Despachos</Card.Title>
-          <Button variant="success" onClick={handleExport} disabled={dispatches.length === 0}>
-            <i className="bi bi-file-earmark-excel me-2"></i>
-            Exportar a Excel
-          </Button>
+          {/* Botón de Exportar a Excel solo visible para admin */}
+          {isAdmin && (
+            <Button variant="success" onClick={handleExport} disabled={dispatches.length === 0}>
+              <i className="bi bi-file-earmark-excel me-2"></i>
+              Exportar a Excel
+            </Button>
+          )}
         </div>
         <Table striped bordered hover responsive>
           <thead>
