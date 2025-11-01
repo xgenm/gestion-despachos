@@ -139,7 +139,30 @@ const DispatchForm: React.FC<Props> = ({ onSubmit }) => {
   const resetForm = () => {
     setFormData(initialFormState);
     setSelectedMaterials({});
-  }
+    setCaminoData(null);
+  };
+
+  // Handlers para el camión autocomplete
+  const handlePlacaChange = (placa: string) => {
+    setFormData(prev => ({ ...prev, placa: placa.toUpperCase() }));
+  };
+
+  const handleCaminoFound = (camino: any) => {
+    setCaminoData(camino);
+    setFormData(prev => ({
+      ...prev,
+      placa: camino.placa,
+      camion: camino.marca,
+      color: camino.color,
+      ficha: camino.ficha,
+      m3: camino.m3,
+      caminoId: camino.id
+    }));
+  };
+
+  const handleCaminoNotFound = () => {
+    setCaminoData(null);
+  };
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -227,18 +250,38 @@ const DispatchForm: React.FC<Props> = ({ onSubmit }) => {
 
           <hr />
 
+          {/* Autocomplete de Camión por Placa */}
+          <CaminoAutocomplete
+            placa={formData.placa}
+            onPlacaChange={handlePlacaChange}
+            onCaminoFound={handleCaminoFound}
+            onCaminoNotFound={handleCaminoNotFound}
+            isReadOnly={user?.role === 'employee'}
+          />
+
+          {/* Campos del Camión rellenados automáticamente */}
           <Row className="mb-3">
-            <Form.Group as={Col} controlId="placa">
-              <Form.Label>Placa</Form.Label>
-              <Form.Control type="text" value={formData.placa} onChange={handleInputChange} required />
-            </Form.Group>
             <Form.Group as={Col} controlId="camion">
-              <Form.Label>Camión</Form.Label>
-              <Form.Control type="text" value={formData.camion} onChange={handleInputChange} required />
+              <Form.Label>Marca</Form.Label>
+              <Form.Control 
+                type="text" 
+                value={formData.camion} 
+                onChange={handleInputChange}
+                readOnly={!user || user.role !== 'admin'}
+                placeholder="Se rellenará automáticamente"
+              />
+              {user?.role !== 'admin' && caminoData && <Form.Text className="text-muted">Solo admin puede editar</Form.Text>}
             </Form.Group>
             <Form.Group as={Col} controlId="color">
               <Form.Label>Color</Form.Label>
-              <Form.Control type="text" value={formData.color} onChange={handleInputChange} />
+              <Form.Control 
+                type="text" 
+                value={formData.color} 
+                onChange={handleInputChange}
+                readOnly={!user || user.role !== 'admin'}
+                placeholder="Se rellenará automáticamente"
+              />
+              {user?.role !== 'admin' && caminoData && <Form.Text className="text-muted">Solo admin puede editar</Form.Text>}
             </Form.Group>
             <Form.Group as={Col} controlId="ficha">
               <Form.Label>Ficha</Form.Label>
@@ -246,8 +289,22 @@ const DispatchForm: React.FC<Props> = ({ onSubmit }) => {
                 type="text" 
                 value={formData.ficha} 
                 onChange={handleInputChange}
+                readOnly={!user || user.role !== 'admin'}
                 placeholder="Alfanumérico"
               />
+              {user?.role !== 'admin' && caminoData && <Form.Text className="text-muted">Solo admin puede editar</Form.Text>}
+            </Form.Group>
+            <Form.Group as={Col} controlId="m3">
+              <Form.Label>M³ Máximos</Form.Label>
+              <Form.Control 
+                type="number" 
+                value={formData.m3} 
+                onChange={handleInputChange}
+                readOnly={!user || user.role !== 'admin'}
+                placeholder="Se rellenará automáticamente"
+                step="0.1"
+              />
+              {user?.role !== 'admin' && caminoData && <Form.Text className="text-muted">Solo admin puede editar</Form.Text>}
             </Form.Group>
           </Row>
 
