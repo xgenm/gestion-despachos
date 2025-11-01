@@ -114,7 +114,8 @@ const DispatchView: React.FC = () => {
       } else {
         const errorData = await response.json();
         console.error('❌ Error del servidor:', errorData);
-        alert(`Error al crear ticket: ${errorData.error || 'Error desconocido'}`);
+        console.error('❌ Detalles completos:', JSON.stringify(errorData, null, 2));
+        alert(`Error al crear ticket (${response.status}): ${errorData.error || JSON.stringify(errorData)}`);
       }
     } catch (error) {
       console.error('❌ Error de red:', error);

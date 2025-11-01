@@ -86,12 +86,21 @@ router.get('/', async (req, res) => {
 router.post('/', async (req: AuthRequest, res) => {
   const { fecha, hora, camion, placa, color, ficha, materials, cliente, celular, total, userId, equipmentId, operatorId } = req.body;
   
-  console.log('📥 Backend recibiendo despacho:', { fecha, hora, camion, placa, cliente, userId, total, materials });
+  console.log('📥 Backend recibiendo despacho:', JSON.stringify({ fecha, hora, camion, placa, cliente, userId, total, materials }, null, 2));
   
   // Validación básica de datos requeridos (despachoNo ya no es necesario, se genera automáticamente)
   if (!fecha || !hora || !camion || !placa || !cliente) {
-    console.error('❌ Faltan campos requeridos:', { fecha, hora, camion, placa, cliente });
-    return res.status(400).json({ error: 'Faltan campos requeridos' });
+    console.error('❌ Faltan campos requeridos:', { fecha: !!fecha, hora: !!hora, camion: !!camion, placa: !!placa, cliente: !!cliente });
+    return res.status(400).json({ 
+      error: 'Faltan campos requeridos',
+      missing: {
+        fecha: !fecha,
+        hora: !hora,
+        camion: !camion,
+        placa: !placa,
+        cliente: !cliente
+      }
+    });
   }
   
   // Convertir y validar tipos
