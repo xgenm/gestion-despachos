@@ -124,7 +124,6 @@ const CaminoAutocomplete: React.FC<Props> = ({
             placeholder="Ej: AA123BC"
             value={placa}
             onChange={(e) => onPlacaChange(e.target.value.toUpperCase())}
-            readOnly={isReadOnly}
             disabled={isSearching}
             maxLength={10}
           />
@@ -133,7 +132,7 @@ const CaminoAutocomplete: React.FC<Props> = ({
         <Button 
           variant="primary" 
           type="submit" 
-          disabled={!placa.trim() || isSearching || isReadOnly}
+          disabled={!placa.trim() || isSearching}
         >
           {isSearching ? 'Buscando...' : 'Buscar Camión'}
         </Button>
