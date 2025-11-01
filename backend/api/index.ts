@@ -1,0 +1,75 @@
+import express from 'express';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import path from 'path';
+
+// Importar rutas
+import dispatchRoutes from '../src/routes/dispatchRoutes';
+import userRoutes from '../src/routes/userRoutes';
+import equipmentRoutes from '../src/routes/equipmentRoutes';
+import operatorRoutes from '../src/routes/operatorRoutes';
+import companyRoutes from '../src/routes/companyRoutes';
+import clientRoutes from '../src/routes/clientRoutes';
+import caminoRoutes from '../src/routes/caminoRoutes';
+import authRoutes from '../src/routes/authRoutes';
+import auditRoutes from '../src/routes/auditRoutes';
+
+dotenv.config();
+
+const app = express();
+
+// Middlewares
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// CORS - Permitir solicitudes desde el frontend en Vercel
+const allowedOrigins = [
+  'http://localhost:3001',
+  'https://gestion-despachos-2sls.vercel.app',
+  process.env.FRONTEND_URL || 'http://localhost:3001'
+];
+
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      console.warn(`CORS bloqueado: ${origin}`);
+      callback(new Error('No permitido por CORS'));
+    }
+  },
+  credentials: true
+}));
+
+// Servir archivos estáticos del frontend (build de React)
+const buildPath = path.join(__dirname, '../../build');
+app.use(express.static(buildPath));
+
+// Rutas de API
+app.use('/api/auth', authRoutes);
+app.use('/api/dispatches', dispatchRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/equipment', equipmentRoutes);
+app.use('/api/operators', operatorRoutes);
+app.use('/api/companies', companyRoutes);
+app.use('/api/camiones', caminoRoutes);
+app.use('/api/audit', auditRoutes);
+app.use('/api/clients', clientRoutes);
+
+// Health check
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+// Servir index.html para rutas no API (React Router)
+app.get('*', (req, res) => {
+  res.sendFile(path.join(buildPath, 'index.html'));
+});
+
+// Error handling
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  console.error('Error:', err);
+  res.status(500).json({ error: 'Error interno del servidor' });
+});
+
+export default app;
