@@ -295,7 +295,7 @@ const DispatchForm: React.FC<Props> = ({ onSubmit }) => {
               {user?.role !== 'admin' && caminoData && <Form.Text className="text-muted">Solo admin puede editar</Form.Text>}
             </Form.Group>
             <Form.Group as={Col} controlId="m3">
-              <Form.Label>M³ Máximos</Form.Label>
+              <Form.Label>M³</Form.Label>
               <Form.Control 
                 type="number" 
                 value={formData.m3} 

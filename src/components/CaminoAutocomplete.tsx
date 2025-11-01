@@ -118,7 +118,7 @@ const CaminoAutocomplete: React.FC<Props> = ({
       <h5>Buscar/Crear Camión por Placa</h5>
       <Form onSubmit={handleSearchPlaca}>
         <Form.Group className="mb-3">
-          <Form.Label>Placa (Matrícula)</Form.Label>
+          <Form.Label>Placa</Form.Label>
           <Form.Control
             type="text"
             placeholder="Ej: AA123BC"
@@ -126,8 +126,9 @@ const CaminoAutocomplete: React.FC<Props> = ({
             onChange={(e) => onPlacaChange(e.target.value.toUpperCase())}
             readOnly={isReadOnly}
             disabled={isSearching}
-            maxLength={20}
+            maxLength={10}
           />
+          <Form.Text className="text-muted">Máximo 10 caracteres alfanuméricos</Form.Text>
         </Form.Group>
         <Button 
           variant="primary" 
@@ -169,15 +170,16 @@ const CaminoAutocomplete: React.FC<Props> = ({
             />
           </Form.Group>
           <Form.Group className="mb-2">
-            <Form.Label>M³ Máximos (Cúbicos) *</Form.Label>
+            <Form.Label>M³</Form.Label>
             <Form.Control
               type="number"
-              placeholder="Ej: 15.5"
+              placeholder="Capacidad del camión"
               step="0.1"
               value={newCamino.m3}
               onChange={(e) => setNewCamino({ ...newCamino, m3: e.target.value })}
               required
             />
+            <Form.Text className="text-muted">Capacidad máxima en metros cúbicos</Form.Text>
           </Form.Group>
           <Form.Group className="mb-3">
             <Form.Label>Ficha</Form.Label>
