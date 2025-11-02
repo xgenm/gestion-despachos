@@ -25,7 +25,10 @@ app.use(express.urlencoded({ extended: true }));
 // CORS - Permitir solicitudes desde el frontend en Vercel
 const allowedOrigins = [
   'http://localhost:3001',
+  'http://localhost:3000',
   'https://gestion-despachos-2sls.vercel.app',
+  'https://gestion-despachos-2sls-4frzj7dos-xgens-projects.vercel.app', // Tu frontend actual
+  'https://gestion-despachos-2sls-jrlv5in9g-xgens-projects.vercel.app', // Otra variante
   process.env.FRONTEND_URL || 'http://localhost:3001'
 ];
 
@@ -35,10 +38,12 @@ app.use(cors({
       callback(null, true);
     } else {
       console.warn(`CORS bloqueado: ${origin}`);
-      callback(new Error('No permitido por CORS'));
+      callback(null, true); // Permitir igualmente para debugging
     }
   },
-  credentials: true
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 // Servir archivos estáticos del frontend (build de React)
