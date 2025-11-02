@@ -1,7 +1,6 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import path from 'path';
 
 // Importar rutas
 import dispatchRoutes from '../src/routes/dispatchRoutes';
@@ -46,10 +45,6 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-// Servir archivos estáticos del frontend (build de React)
-const buildPath = path.join(__dirname, '../../build');
-app.use(express.static(buildPath));
-
 // Rutas de API
 app.use('/api/auth', authRoutes);
 app.use('/api/dispatches', dispatchRoutes);
@@ -64,11 +59,6 @@ app.use('/api/clients', clientRoutes);
 // Health check
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
-});
-
-// Servir index.html para rutas no API (React Router)
-app.get('*', (req, res) => {
-  res.sendFile(path.join(buildPath, 'index.html'));
 });
 
 // Error handling
