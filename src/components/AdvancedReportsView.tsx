@@ -38,7 +38,7 @@ const AdvancedReportsView: React.FC = () => {
     maxAmount: 999999
   });
 
-  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3002/api';
+  const API_URL = process.env.REACT_APP_API_URL || (process.env.NODE_ENV === 'production' ? '/api' : 'http://localhost:3002/api');
 
   // Cargar despachos, empleados, equipos y operarios
   useEffect(() => {

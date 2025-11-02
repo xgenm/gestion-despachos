@@ -2,7 +2,7 @@
  * Utilidad para hacer peticiones HTTP con manejo automático de autenticación
  */
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3002/api';
+const API_URL = process.env.REACT_APP_API_URL || (process.env.NODE_ENV === 'production' ? '/api' : 'http://localhost:3002/api');
 
 interface FetchOptions extends RequestInit {
   requireAuth?: boolean;
