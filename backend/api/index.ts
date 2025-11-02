@@ -48,6 +48,8 @@ app.use(cors({
 
 // Manejo explícito de preflight
 app.options('*', cors());
+
+// Rutas de API
 app.use('/api/auth', authRoutes);
 app.use('/api/dispatches', dispatchRoutes);
 app.use('/api/users', userRoutes);
