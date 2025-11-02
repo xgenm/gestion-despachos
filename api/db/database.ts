@@ -1,6 +1,5 @@
 import { Pool } from 'pg';
 import dotenv from 'dotenv';
-import { UserModel } from '../models/User';
 
 dotenv.config();
 
@@ -97,8 +96,8 @@ const initializeTables = async () => {
       )
     `);
     
-    // Inicializar tabla de administradores
-    await UserModel.createTable();
+    // Inicializar tabla de administradores (postponed)
+    // await UserModel.createTable();
     
     console.log('Tablas inicializadas correctamente');
   } catch (err) {
