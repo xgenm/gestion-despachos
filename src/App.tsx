@@ -23,7 +23,8 @@ import ProductPriceManager from './components/ProductPriceManager';
 import AdminUserManager from './components/AdminUserManager';
 import AdvancedReportsView from './components/AdvancedReportsView';
 
-// Componente para proteger rutas
+// Backend: https://gestion-despachos.onrender.com/api
+// Frontend: Vercel
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAuthenticated } = useAuth();
   if (!isAuthenticated) {
