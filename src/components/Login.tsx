@@ -11,7 +11,7 @@ const Login: React.FC = () => {
   
   const { login } = useAuth();
 
-  const API_URL = process.env.REACT_APP_API_URL || (process.env.NODE_ENV === 'production' ? '/api' : 'http://localhost:3002/api');
+  const API_URL = process.env.REACT_APP_API_URL || (process.env.NODE_ENV === 'production' ? 'https://gestion-despachos.onrender.com/api' : 'http://localhost:3002/api');
 
   // Limpiar tokens inválidos al cargar el componente de login
   useEffect(() => {
