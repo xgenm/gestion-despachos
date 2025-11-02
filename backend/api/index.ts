@@ -26,26 +26,28 @@ const allowedOrigins = [
   'http://localhost:3001',
   'http://localhost:3000',
   'https://gestion-despachos-2sls.vercel.app',
-  'https://gestion-despachos-2sls-4frzj7dos-xgens-projects.vercel.app', // Tu frontend actual
-  'https://gestion-despachos-2sls-jrlv5in9g-xgens-projects.vercel.app', // Otra variante
+  'https://gestion-despachos-2sls-4frzj7dos-xgens-projects.vercel.app',
+  'https://gestion-despachos-2sls-jrlv5in9g-xgens-projects.vercel.app',
   process.env.FRONTEND_URL || 'http://localhost:3001'
 ];
 
 app.use(cors({
   origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) {
+    if (!origin || allowedOrigins.some(allowed => origin.includes(allowed) || allowed.includes(origin))) {
       callback(null, true);
     } else {
       console.warn(`CORS bloqueado: ${origin}`);
-      callback(null, true); // Permitir igualmente para debugging
+      callback(null, true);
     }
   },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+  exposedHeaders: ['Content-Type']
 }));
 
-// Rutas de API
+// Manejo explícito de preflight
+app.options('*', cors());
 app.use('/api/auth', authRoutes);
 app.use('/api/dispatches', dispatchRoutes);
 app.use('/api/users', userRoutes);
