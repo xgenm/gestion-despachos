@@ -14,7 +14,7 @@ interface Company {
   email: string;
 }
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3002/api';
+const API_URL = process.env.REACT_APP_API_URL || (process.env.NODE_ENV === 'production' ? 'https://gestion-despachos.onrender.com/api' : 'http://localhost:3002/api');
 
 const EnhancedAdminView: React.FC = () => {
   const [dispatches, setDispatches] = useState<Dispatch[]>([]);
