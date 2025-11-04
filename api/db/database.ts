@@ -6,7 +6,9 @@ dotenv.config();
 // Configuración de la base de datos PostgreSQL
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: false // Deshabilitar SSL para desarrollo local
+  ssl: {
+    rejectUnauthorized: false
+  }
 });
 
 // Función para inicializar las tablas
