@@ -20,14 +20,32 @@ import checkRole from './middleware/roleMiddleware';
 const app = express();
 const port = process.env.PORT || 3002;
 
-// Configuración de CORS ultra permisiva para Vercel
-app.use(cors({
-  origin: '*',
+// Configuración de CORS permisiva
+const corsOptions = {
+  origin: function (origin: any, callback: any) {
+    const allowedOrigins = [
+      'http://localhost:3001',
+      'http://localhost:3000',
+      'https://gestion-despachos-2sls.vercel.app',
+      'https://gestion-despachos-2sls-mo7io32tl-xgens-projects.vercel.app',
+      'https://gestion-despachos-2sls-9i56hdfra-xgens-projects.vercel.app',
+      'https://gestion-despachos-2sls-lsxchnd5s-xgens-projects.vercel.app',
+      process.env.FRONTEND_URL
+    ].filter(Boolean);
+    
+    if (!origin || allowedOrigins.some(allowed => allowed?.includes(origin) || origin?.includes(allowed || ''))) {
+      callback(null, true);
+    } else {
+      callback(null, true); // Permitir igual para debugging
+    }
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
   credentials: false,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: '*'
-}));
+  optionsSuccessStatus: 200
+};
 
+app.use(cors(corsOptions));
 app.use(express.json());
 
 // Endpoint de prueba de conexión a BD
