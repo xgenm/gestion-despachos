@@ -1,14 +1,30 @@
 import { Pool } from 'pg';
 import dotenv from 'dotenv';
+import { Pool } from 'pg';
 import { UserModel } from '../models/User';
 
 dotenv.config();
 
 // Configuración de la base de datos PostgreSQL
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: false // Deshabilitar SSL para desarrollo local
-});
+const getPoolConfig = () => {
+  const config: any = {
+    connectionString: process.env.DATABASE_URL
+  };
+  
+  // En producción (Render), requerir SSL
+  // En desarrollo local, deshabilitarlo
+  if (process.env.NODE_ENV === 'production') {
+    config.ssl = {
+      rejectUnauthorized: false
+    };
+  } else {
+    config.ssl = false;
+  }
+  
+  return config;
+};
+
+const pool = new Pool(getPoolConfig());
 
 // Función para inicializar las tablas
 const initializeTables = async () => {
