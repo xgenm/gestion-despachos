@@ -28,9 +28,6 @@ app.use(cors({
   allowedHeaders: '*'
 }));
 
-// Manejar preflight OPTIONS explícitamente
-app.options('*', cors());
-
 app.use(express.json());
 
 // Endpoint de prueba de conexión a BD
