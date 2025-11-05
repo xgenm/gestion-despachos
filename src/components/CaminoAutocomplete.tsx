@@ -65,8 +65,8 @@ const CaminoAutocomplete: React.FC<Props> = ({
       } else {
         console.log('❌ Camión no encontrado');
         onCaminoNotFound();
-        setSearchMessage('❌ Placa no encontrada. Puedes crear un nuevo camión.');
-        setShowNewCaminoForm(user?.role === 'admin');
+        setSearchMessage('❌ Placa no encontrada. Completa los datos del camión abajo para crearlo automáticamente al guardar el ticket.');
+        setShowNewCaminoForm(false); // No mostrar formulario, usar campos principales
       }
     } catch (error) {
       console.error('❌ Error buscando camión:', error);

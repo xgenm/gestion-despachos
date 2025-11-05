@@ -362,11 +362,11 @@ const DispatchForm: React.FC<Props> = ({ onSubmit }) => {
                 type="text" 
                 value={formData.camion} 
                 onChange={handleInputChange}
-                readOnly={!user || user.role !== 'admin'}
-                placeholder="Se rellenará automáticamente"
+                readOnly={caminoData !== null && user?.role === 'employee'}
+                placeholder={caminoData ? "Automático" : "Escribe la marca del camión"}
                 required
               />
-              {user?.role !== 'admin' && caminoData && <Form.Text className="text-muted">Solo admin puede editar</Form.Text>}
+              {user?.role === 'employee' && caminoData && <Form.Text className="text-muted">Camión ya registrado (solo admin puede modificar)</Form.Text>}
             </Form.Group>
             <Form.Group as={Col} controlId="color">
               <Form.Label>Color</Form.Label>
@@ -374,10 +374,10 @@ const DispatchForm: React.FC<Props> = ({ onSubmit }) => {
                 type="text" 
                 value={formData.color} 
                 onChange={handleInputChange}
-                readOnly={!user || user.role !== 'admin'}
-                placeholder="Se rellenará automáticamente"
+                readOnly={caminoData !== null && user?.role === 'employee'}
+                placeholder={caminoData ? "Automático" : "Color del camión"}
               />
-              {user?.role !== 'admin' && caminoData && <Form.Text className="text-muted">Solo admin puede editar</Form.Text>}
+              {user?.role === 'employee' && caminoData && <Form.Text className="text-muted">Camión ya registrado (solo admin puede modificar)</Form.Text>}
             </Form.Group>
             <Form.Group as={Col} controlId="ficha">
               <Form.Label>Ficha</Form.Label>
@@ -385,22 +385,23 @@ const DispatchForm: React.FC<Props> = ({ onSubmit }) => {
                 type="text" 
                 value={formData.ficha} 
                 onChange={handleInputChange}
-                readOnly={!user || user.role !== 'admin'}
+                readOnly={caminoData !== null && user?.role === 'employee'}
                 placeholder="Alfanumérico"
               />
-              {user?.role !== 'admin' && caminoData && <Form.Text className="text-muted">Solo admin puede editar</Form.Text>}
+              {user?.role === 'employee' && caminoData && <Form.Text className="text-muted">Camión ya registrado (solo admin puede modificar)</Form.Text>}
             </Form.Group>
             <Form.Group as={Col} controlId="m3">
-              <Form.Label>M³</Form.Label>
+              <Form.Label>M³ *</Form.Label>
               <Form.Control 
                 type="number" 
                 value={formData.m3} 
                 onChange={handleInputChange}
-                readOnly={!user || user.role !== 'admin'}
-                placeholder="Se rellenará automáticamente"
+                readOnly={caminoData !== null && user?.role === 'employee'}
+                placeholder={caminoData ? "Automático" : "Capacidad del camión"}
                 step="0.1"
+                required
               />
-              {user?.role !== 'admin' && caminoData && <Form.Text className="text-muted">Solo admin puede editar</Form.Text>}
+              {user?.role === 'employee' && caminoData && <Form.Text className="text-muted">Camión ya registrado (solo admin puede modificar)</Form.Text>}
             </Form.Group>
           </Row>
 
