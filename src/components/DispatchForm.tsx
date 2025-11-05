@@ -186,6 +186,42 @@ const DispatchForm: React.FC<Props> = ({ onSubmit }) => {
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     
+    // Validar campos requeridos
+    if (!formData.fecha || !formData.hora) {
+      alert('⚠️ Fecha y hora son requeridos');
+      return;
+    }
+    
+    if (!formData.placa || !formData.placa.trim()) {
+      alert('⚠️ Debes buscar un camión por placa antes de continuar');
+      return;
+    }
+    
+    if (!formData.camion || !formData.camion.trim()) {
+      alert('⚠️ Marca del camión es requerida');
+      return;
+    }
+    
+    if (!formData.cliente || !formData.cliente.trim()) {
+      alert('⚠️ Cliente es requerido');
+      return;
+    }
+    
+    // Validar que haya al menos un material seleccionado
+    const hasMaterials = Object.keys(selectedMaterials).some(
+      key => selectedMaterials[key].selected && selectedMaterials[key].quantity > 0
+    );
+    
+    if (!hasMaterials) {
+      alert('⚠️ Debes seleccionar al menos un material');
+      return;
+    }
+    
+    if (total <= 0) {
+      alert('⚠️ El total debe ser mayor a 0');
+      return;
+    }
+    
     // Asegurar que userId tenga un valor válido antes de enviar
     const finalUserId = formData.userId || user?.id || 1; // Fallback a admin si no hay usuario
     
@@ -197,6 +233,8 @@ const DispatchForm: React.FC<Props> = ({ onSubmit }) => {
         .map(key => ({ id: key, quantity: selectedMaterials[key].quantity })),
       total,
     };
+    
+    console.log('📤 Enviando despacho:', newDispatch);
     onSubmit(newDispatch);
     resetForm();
   };
@@ -281,13 +319,14 @@ const DispatchForm: React.FC<Props> = ({ onSubmit }) => {
           {/* Campos del Camión rellenados automáticamente */}
           <Row className="mb-3">
             <Form.Group as={Col} controlId="camion">
-              <Form.Label>Marca</Form.Label>
+              <Form.Label>Marca *</Form.Label>
               <Form.Control 
                 type="text" 
                 value={formData.camion} 
                 onChange={handleInputChange}
                 readOnly={!user || user.role !== 'admin'}
                 placeholder="Se rellenará automáticamente"
+                required
               />
               {user?.role !== 'admin' && caminoData && <Form.Text className="text-muted">Solo admin puede editar</Form.Text>}
             </Form.Group>
@@ -368,12 +407,23 @@ const DispatchForm: React.FC<Props> = ({ onSubmit }) => {
 
           <Row className="mb-3">
             <Form.Group as={Col} md={6} controlId="cliente">
-              <Form.Label>Cliente</Form.Label>
-              <Form.Control type="text" value={formData.cliente} onChange={handleInputChange} />
+              <Form.Label>Cliente *</Form.Label>
+              <Form.Control 
+                type="text" 
+                value={formData.cliente} 
+                onChange={handleInputChange}
+                required
+                placeholder="Nombre del cliente"
+              />
             </Form.Group>
             <Form.Group as={Col} md={6} controlId="celular">
               <Form.Label>Celular</Form.Label>
-              <Form.Control type="text" value={formData.celular} onChange={handleInputChange} />
+              <Form.Control 
+                type="text" 
+                value={formData.celular} 
+                onChange={handleInputChange}
+                placeholder="Teléfono del cliente"
+              />
             </Form.Group>
           </Row>
 
