@@ -20,7 +20,7 @@ import checkRole from './middleware/roleMiddleware';
 const app = express();
 const port = process.env.PORT || 3002;
 
-// Configuración de CORS permisiva
+// Configuración de CORS para Railway + Vercel
 const corsOptions = {
   origin: function (origin: any, callback: any) {
     const allowedOrigins = [
@@ -33,19 +33,37 @@ const corsOptions = {
       process.env.FRONTEND_URL
     ].filter(Boolean);
     
-    if (!origin || allowedOrigins.some(allowed => allowed?.includes(origin) || origin?.includes(allowed || ''))) {
+    // Permitir requests sin origin (Postman, curl, etc.)
+    if (!origin) {
+      return callback(null, true);
+    }
+    
+    // Verificar si el origin está en la lista permitida
+    const isAllowed = allowedOrigins.some(allowed => 
+      origin === allowed || 
+      origin.startsWith(allowed) || 
+      allowed?.startsWith(origin)
+    );
+    
+    if (isAllowed) {
       callback(null, true);
     } else {
-      callback(null, true); // Permitir igual para debugging
+      console.log('❌ Origin bloqueado por CORS:', origin);
+      callback(new Error('Not allowed by CORS'));
     }
   },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With'],
+  exposedHeaders: ['Content-Length', 'Content-Type'],
   credentials: false,
-  optionsSuccessStatus: 200
+  preflightContinue: false,
+  optionsSuccessStatus: 204
 };
 
 app.use(cors(corsOptions));
+
+// Handler explícito para OPTIONS preflight
+app.options('*', cors(corsOptions));
 app.use(express.json());
 
 // Endpoint de prueba de conexión a BD

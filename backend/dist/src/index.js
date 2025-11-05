@@ -30,7 +30,7 @@ const authMiddleware_1 = __importDefault(require("./middleware/authMiddleware"))
 const roleMiddleware_1 = __importDefault(require("./middleware/roleMiddleware"));
 const app = (0, express_1.default)();
 const port = process.env.PORT || 3002;
-// Configuración de CORS permisiva
+// Configuración de CORS para Railway + Vercel
 const corsOptions = {
     origin: function (origin, callback) {
         const allowedOrigins = [
@@ -42,19 +42,32 @@ const corsOptions = {
             'https://gestion-despachos-2sls-lsxchnd5s-xgens-projects.vercel.app',
             process.env.FRONTEND_URL
         ].filter(Boolean);
-        if (!origin || allowedOrigins.some(allowed => (allowed === null || allowed === void 0 ? void 0 : allowed.includes(origin)) || (origin === null || origin === void 0 ? void 0 : origin.includes(allowed || '')))) {
+        // Permitir requests sin origin (Postman, curl, etc.)
+        if (!origin) {
+            return callback(null, true);
+        }
+        // Verificar si el origin está en la lista permitida
+        const isAllowed = allowedOrigins.some(allowed => origin === allowed ||
+            origin.startsWith(allowed) ||
+            (allowed === null || allowed === void 0 ? void 0 : allowed.startsWith(origin)));
+        if (isAllowed) {
             callback(null, true);
         }
         else {
-            callback(null, true); // Permitir igual para debugging
+            console.log('❌ Origin bloqueado por CORS:', origin);
+            callback(new Error('Not allowed by CORS'));
         }
     },
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With'],
+    exposedHeaders: ['Content-Length', 'Content-Type'],
     credentials: false,
-    optionsSuccessStatus: 200
+    preflightContinue: false,
+    optionsSuccessStatus: 204
 };
 app.use((0, cors_1.default)(corsOptions));
+// Handler explícito para OPTIONS preflight
+app.options('*', (0, cors_1.default)(corsOptions));
 app.use(express_1.default.json());
 // Endpoint de prueba de conexión a BD
 app.get('/api/test-db', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
