@@ -48,24 +48,29 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 
-// Endpoint de prueba de conexión a BD
 app.get('/api/test-db', async (req, res) => {
   try {
-    const { Pool } = require('pg');
-    const pool = new Pool({
-      connectionString: process.env.DATABASE_URL,
-      ssl: { rejectUnauthorized: false }
-    });
-    
-    // Obtener información del usuario admin
-    const userResult = await pool.query('SELECT id, username, role, LEFT(password, 20) as password_preview FROM users WHERE username = \'admin\'');
-    const countResult = await pool.query('SELECT COUNT(*) as count FROM users');
-    
-    await pool.end();
-    res.json({ 
-      message: 'Conexión exitosa a PostgreSQL', 
-      userCount: countResult.rows[0].count,
-      adminUser: userResult.rows[0],
+    const db = require('../api/db');
+    const isPostgres = !!process.env.DATABASE_URL;
+
+    let userCount, adminUser;
+
+    if (isPostgres) {
+      const countResult = await db.query('SELECT COUNT(*) as count FROM users', []);
+      userCount = countResult.rows[0].count;
+      const userResult = await db.query('SELECT id, username, role, LEFT(password, 20) as password_preview FROM users WHERE username = $1', ['admin']);
+      adminUser = userResult.rows[0];
+    } else {
+      const countResult = await db.query('SELECT COUNT(*) as count FROM users', []);
+      userCount = countResult[0].count;
+      const userResult = await db.query('SELECT id, username, role, SUBSTR(password, 1, 20) as password_preview FROM users WHERE username = ?', ['admin']);
+      adminUser = userResult[0];
+    }
+
+    res.json({
+      message: `Conexión exitosa a ${isPostgres ? 'PostgreSQL' : 'SQLite'}`,
+      userCount,
+      adminUser,
       env: {
         hasDatabaseUrl: !!process.env.DATABASE_URL,
         databaseUrlPreview: process.env.DATABASE_URL ? process.env.DATABASE_URL.substring(0, 50) + '...' : 'NO CONFIGURADA',
@@ -75,8 +80,8 @@ app.get('/api/test-db', async (req, res) => {
         disableAuth: process.env.DISABLE_AUTH
       }
     });
-  } catch (error: any) {
-    res.status(500).json({ 
+  } catch (error) {
+    res.status(500).json({
       error: error.message,
       env: {
         hasDatabaseUrl: !!process.env.DATABASE_URL,
