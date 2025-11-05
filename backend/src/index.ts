@@ -61,9 +61,6 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-
-// Handler explícito para OPTIONS preflight
-app.options('*', cors(corsOptions));
 app.use(express.json());
 
 // Endpoint de prueba de conexión a BD

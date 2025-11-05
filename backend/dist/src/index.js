@@ -66,8 +66,6 @@ const corsOptions = {
     optionsSuccessStatus: 204
 };
 app.use((0, cors_1.default)(corsOptions));
-// Handler explícito para OPTIONS preflight
-app.options('*', (0, cors_1.default)(corsOptions));
 app.use(express_1.default.json());
 // Endpoint de prueba de conexión a BD
 app.get('/api/test-db', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
