@@ -37,6 +37,7 @@ const corsOptions = {
       /^https:\/\/gestion-despachos-2sls.*\.vercel\.app$/,  // Todas las URLs de Vercel (production y preview)
       /^https:\/\/gestion-despachos-2sls-[a-z0-9]+-xgens-projects\.vercel\.app$/,  // Preview deployments específicos
       /^https:\/\/.*\.vercel\.app$/,  // Cualquier subdominio de Vercel (permisivo)
+      /^https:\/\/.*\.netlify\.app$/,  // Cualquier subdominio de Netlify
     ];
     
     // Lista explícita de orígenes permitidos
