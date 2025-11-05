@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, ListGroup, Form, Button, Row, Col, Modal } from 'react-bootstrap';
+import { Card, ListGroup, Form, Button, Modal } from 'react-bootstrap';
 
 interface Company {
   id: number;
