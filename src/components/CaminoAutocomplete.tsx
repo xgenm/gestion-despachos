@@ -46,11 +46,16 @@ const CaminoAutocomplete: React.FC<Props> = ({
 
     try {
       const token = localStorage.getItem('token');
+      console.log('🔍 Buscando camión con placa:', placa.toUpperCase());
+      console.log('🔑 Token:', token ? 'Presente' : 'Ausente');
+      
       const response = await fetch(`${API_URL}/camiones?placa=${placa.toUpperCase()}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
+      console.log('📡 Respuesta del servidor:', response.status);
       const result = await response.json();
+      console.log('📊 Resultado completo:', result);
 
       if (result.found && result.data) {
         console.log('✅ Camión encontrado:', result.data);
@@ -64,7 +69,7 @@ const CaminoAutocomplete: React.FC<Props> = ({
         setShowNewCaminoForm(user?.role === 'admin');
       }
     } catch (error) {
-      console.error('Error buscando camión:', error);
+      console.error('❌ Error buscando camión:', error);
       setSearchMessage('❌ Error al buscar camión');
     } finally {
       setIsSearching(false);
