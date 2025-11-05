@@ -25,14 +25,18 @@ const corsOptions = {
   origin: function (origin: any, callback: any) {
     // Permitir requests sin origin (Postman, curl, etc.)
     if (!origin) {
+      console.log('✅ Request sin origin (permitido)');
       return callback(null, true);
     }
+    
+    console.log('🔍 Verificando origin:', origin);
     
     // Patrones permitidos
     const allowedPatterns = [
       /^http:\/\/localhost:(3000|3001)$/,  // Localhost desarrollo
       /^https:\/\/gestion-despachos-2sls.*\.vercel\.app$/,  // Todas las URLs de Vercel (production y preview)
-      /^https:\/\/.*-xgens-projects\.vercel\.app$/,  // Preview deployments de Vercel
+      /^https:\/\/gestion-despachos-2sls-[a-z0-9]+-xgens-projects\.vercel\.app$/,  // Preview deployments específicos
+      /^https:\/\/.*\.vercel\.app$/,  // Cualquier subdominio de Vercel (permisivo)
     ];
     
     // Lista explícita de orígenes permitidos
@@ -48,6 +52,7 @@ const corsOptions = {
     const matchesPattern = allowedPatterns.some(pattern => pattern.test(origin));
     
     if (inList || matchesPattern) {
+      console.log('✅ Origin permitido:', origin);
       callback(null, true);
     } else {
       console.log('❌ Origin bloqueado por CORS:', origin);
