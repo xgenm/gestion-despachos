@@ -1,5 +1,5 @@
 import React, { useState, useEffect, ChangeEvent } from 'react';
-import { Card, ListGroup, Form, Button, Row, Col, Modal } from 'react-bootstrap';
+import { Card, ListGroup, Form, Button, Modal } from 'react-bootstrap';
 
 interface Client {
   id: number;
@@ -15,7 +15,6 @@ interface Company {
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3002/api';
 
 const ClientManager: React.FC = () => {
-  const [clients, setClients] = useState<Client[]>([]);
   const [companies, setCompanies] = useState<Company[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [editingClient, setEditingClient] = useState<Client | null>(null);
@@ -63,27 +62,6 @@ const ClientManager: React.FC = () => {
       resetForm();
     } catch (error) {
       console.error("Error saving client:", error);
-    }
-  };
-
-  const handleEdit = (client: Client) => {
-    setEditingClient(client);
-    setFormData({
-      name: client.name,
-      companyId: client.companyId
-    });
-    setShowModal(true);
-  };
-
-  const handleDelete = async (id: number) => {
-    if (window.confirm('¿Está seguro que desea eliminar este cliente?')) {
-      try {
-        // En una implementación completa, se conectaría con una API de clientes
-        console.log("Eliminando cliente:", id);
-        fetchClients();
-      } catch (error) {
-        console.error("Error deleting client:", error);
-      }
     }
   };
 

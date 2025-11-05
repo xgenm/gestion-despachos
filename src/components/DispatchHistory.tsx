@@ -6,7 +6,6 @@ import { saveAs } from 'file-saver';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import DispatchDetailModal from './DispatchDetailModal';
-import { useAuth } from '../contexts/AuthContext';
 
 interface Props {
   dispatches: Dispatch[];
@@ -195,7 +194,6 @@ const DispatchHistory: React.FC<Props> = ({ dispatches, onDelete, isAdmin = fals
       console.log('PDF - userName:', dispatch.userName);
       
       const doc = new jsPDF();
-      const pageHeight = doc.internal.pageSize.getHeight();
       let yPosition = 20;
 
       // Asegurar que materials es un array

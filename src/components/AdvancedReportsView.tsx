@@ -81,9 +81,8 @@ const AdvancedReportsView: React.FC = () => {
       }
     };
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     fetchData();
-  }, []);
+  }, [API_URL]);
 
   // Aplicar filtros
   useEffect(() => {

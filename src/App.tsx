@@ -10,7 +10,6 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 
 // Importar vistas
 import AdminView from './views/AdminView';
-import EnhancedAdminView from './views/EnhancedAdminView';
 import InvoicingView from './views/InvoicingView';
 import DispatchView from './views/DispatchView';
 import EmployeeManagementView from './views/EmployeeManagementView';
@@ -33,17 +32,7 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
   return <>{children}</>;
 };
 
-// Componente para proteger rutas de administrador
-const AdminRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { isAuthenticated, isAdmin } = useAuth();
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
-  if (!isAdmin) {
-    return <Navigate to="/" replace />;
-  }
-  return <>{children}</>;
-};
+
 
 const AppContent: React.FC = () => {
   const { isAuthenticated, isAdmin, logout } = useAuth();

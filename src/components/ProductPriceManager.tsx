@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Card, Table, Form, Button } from 'react-bootstrap';
 
 interface Product {
