@@ -12,6 +12,7 @@ import operatorRoutes from './routes/operatorRoutes';
 import companyRoutes from './routes/companyRoutes';
 import clientRoutes from './routes/clientRoutes';
 import caminoRoutes from './routes/caminoRoutes';
+import productRoutes from './routes/productRoutes';
 import authRoutes from './routes/authRoutes';
 import auditRoutes from './routes/auditRoutes';
 import authenticateToken from './middleware/authMiddleware';
@@ -141,6 +142,7 @@ app.use('/api/users', authenticateToken, userRoutes);
 app.use('/api/equipment', authenticateToken, equipmentRoutes);
 app.use('/api/operators', authenticateToken, operatorRoutes);
 app.use('/api/companies', authenticateToken, companyRoutes);
+app.use('/api/products', authenticateToken, productRoutes);
 app.use('/api/camiones', caminoRoutes);
 app.use('/api/audit', checkRole('admin'), auditRoutes); // Logs de auditoría solo para admin
 app.use('/api/clients', clientRoutes); // Permitir sin autenticación para facilitar auto-registro

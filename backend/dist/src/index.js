@@ -24,6 +24,7 @@ const operatorRoutes_1 = __importDefault(require("./routes/operatorRoutes"));
 const companyRoutes_1 = __importDefault(require("./routes/companyRoutes"));
 const clientRoutes_1 = __importDefault(require("./routes/clientRoutes"));
 const caminoRoutes_1 = __importDefault(require("./routes/caminoRoutes"));
+const productRoutes_1 = __importDefault(require("./routes/productRoutes"));
 const authRoutes_1 = __importDefault(require("./routes/authRoutes"));
 const auditRoutes_1 = __importDefault(require("./routes/auditRoutes"));
 const authMiddleware_1 = __importDefault(require("./middleware/authMiddleware"));
@@ -138,6 +139,7 @@ app.use('/api/users', authMiddleware_1.default, userRoutes_1.default);
 app.use('/api/equipment', authMiddleware_1.default, equipmentRoutes_1.default);
 app.use('/api/operators', authMiddleware_1.default, operatorRoutes_1.default);
 app.use('/api/companies', authMiddleware_1.default, companyRoutes_1.default);
+app.use('/api/products', authMiddleware_1.default, productRoutes_1.default);
 app.use('/api/camiones', caminoRoutes_1.default);
 app.use('/api/audit', (0, roleMiddleware_1.default)('admin'), auditRoutes_1.default); // Logs de auditoría solo para admin
 app.use('/api/clients', clientRoutes_1.default); // Permitir sin autenticación para facilitar auto-registro
