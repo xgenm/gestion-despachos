@@ -154,7 +154,29 @@ router.post('/', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
     const client = yield database_1.default.connect();
     try {
-        // Obtener siguiente número de despacho (atómico)
+        // 1. Guardar o actualizar datos del camión
+        if (placa) {
+            console.log('🚛 Procesando datos del camión, placa:', placa);
+            // Verificar si el camión ya existe
+            const camionExistente = yield client.query('SELECT id FROM camiones WHERE placa = $1', [placa]);
+            if (camionExistente.rows.length > 0) {
+                // Actualizar datos del camión existente
+                console.log('📝 Actualizando camión existente');
+                yield client.query(`UPDATE camiones 
+           SET marca = COALESCE($1, marca), 
+               color = COALESCE($2, color), 
+               ficha = COALESCE($3, ficha),
+               updatedAt = CURRENT_TIMESTAMP
+           WHERE placa = $4`, [camion, color, ficha, placa]);
+            }
+            else {
+                // Crear nuevo camión
+                console.log('➕ Creando nuevo camión');
+                yield client.query(`INSERT INTO camiones (placa, marca, color, ficha, estado)
+           VALUES ($1, $2, $3, $4, 'activo')`, [placa, camion || 'Sin especificar', color, ficha]);
+            }
+        }
+        // 2. Obtener siguiente número de despacho (atómico)
         const numberResult = yield client.query('SELECT get_next_dispatch_number() as next_number');
         const nextNumber = numberResult.rows[0].next_number;
         const despachoNo = String(nextNumber).padStart(7, '0'); // 7 dígitos numéricos

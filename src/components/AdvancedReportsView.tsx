@@ -62,17 +62,17 @@ const AdvancedReportsView: React.FC = () => {
 
         if (employeeRes.ok) {
           const data = await employeeRes.json();
-          setEmployees(data);
+          setEmployees(Array.isArray(data) ? data : (data.data || []));
         }
 
         if (equipmentRes.ok) {
           const data = await equipmentRes.json();
-          setEquipment(data.data || []);
+          setEquipment(Array.isArray(data) ? data : (data.data || []));
         }
 
         if (operatorRes.ok) {
           const data = await operatorRes.json();
-          setOperators(data.data || []);
+          setOperators(Array.isArray(data) ? data : (data.data || []));
         }
       } catch (error) {
         console.error('Error cargando datos:', error);
