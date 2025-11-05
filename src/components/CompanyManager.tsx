@@ -28,7 +28,10 @@ const CompanyManager: React.FC = () => {
 
   const fetchCompanies = async () => {
     try {
-      const response = await fetch(`${API_URL}/companies`);
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_URL}/companies`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
       const data = await response.json();
       setCompanies(data.data || []);
     } catch (error) {
@@ -50,10 +53,14 @@ const CompanyManager: React.FC = () => {
         : `${API_URL}/companies`;
       
       const method = editingCompany ? 'PUT' : 'POST';
+      const token = localStorage.getItem('token');
       
       const response = await fetch(url, {
         method,
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify(formData),
       });
       
@@ -83,7 +90,11 @@ const CompanyManager: React.FC = () => {
   const handleDelete = async (id: number) => {
     if (window.confirm('¿Está seguro que desea eliminar esta empresa?')) {
       try {
-        const response = await fetch(`${API_URL}/companies/${id}`, { method: 'DELETE' });
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${API_URL}/companies/${id}`, { 
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
         if (response.ok) {
           fetchCompanies();
         } else {

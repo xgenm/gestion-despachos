@@ -24,7 +24,10 @@ const InvoicingView: React.FC = () => {
   // Cargar despachos desde el backend
   const fetchDispatches = useCallback(async () => {
     try {
-      const response = await fetch(`${API_URL}/dispatches`);
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_URL}/dispatches`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
       const data = await response.json();
       const formattedData = data.data.map((d: any) => ({
         ...d, 
@@ -45,7 +48,10 @@ const InvoicingView: React.FC = () => {
   useEffect(() => {
     const fetchCompanies = async () => {
       try {
-        const response = await fetch(`${API_URL}/companies`);
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${API_URL}/companies`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
         const data = await response.json();
         setCompanies(data.data || []);
       } catch (error) {

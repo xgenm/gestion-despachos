@@ -163,7 +163,7 @@ const AdvancedReportsView: React.FC = () => {
       'Empleado': d.userName || 'N/A',
       'Equipo': d.equipmentName || 'N/A',
       'Operario': d.operatorName || 'N/A',
-      'Total (RD$)': d.total.toFixed(2)
+      'Total (RD$)': typeof d.total === 'number' ? d.total.toFixed(2) : parseFloat(d.total || '0').toFixed(2)
     }));
 
     const worksheet = XLSX.utils.json_to_sheet(data);
@@ -182,7 +182,10 @@ const AdvancedReportsView: React.FC = () => {
   };
 
   const calculateTotals = () => {
-    const sum = filteredDispatches.reduce((acc, d) => acc + d.total, 0);
+    const sum = filteredDispatches.reduce((acc, d) => {
+      const total = typeof d.total === 'number' ? d.total : parseFloat(d.total) || 0;
+      return acc + total;
+    }, 0);
     const count = filteredDispatches.length;
     const avg = count > 0 ? sum / count : 0;
 
@@ -410,7 +413,7 @@ const AdvancedReportsView: React.FC = () => {
                       <td>{dispatch.userName || 'N/A'}</td>
                       <td>{dispatch.equipmentName || 'N/A'}</td>
                       <td>{dispatch.operatorName || 'N/A'}</td>
-                      <td className="text-end"><strong>{dispatch.total.toFixed(2)}</strong></td>
+                      <td className="text-end"><strong>{typeof dispatch.total === 'number' ? dispatch.total.toFixed(2) : parseFloat(dispatch.total || '0').toFixed(2)}</strong></td>
                     </tr>
                   ))}
                 </tbody>

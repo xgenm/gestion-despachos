@@ -40,7 +40,10 @@ const ClientManager: React.FC = () => {
 
   const fetchCompanies = async () => {
     try {
-      const response = await fetch(`${API_URL}/companies`);
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_URL}/companies`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
       const data = await response.json();
       setCompanies(data.data || []);
     } catch (error) {

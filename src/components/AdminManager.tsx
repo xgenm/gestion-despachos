@@ -18,7 +18,10 @@ const AdminManager: React.FC<AdminManagerProps> = ({ title, apiEndpoint }) => {
   const [newItemName, setNewItemName] = useState('');
 
   useEffect(() => {
-    fetch(`${API_URL}/${apiEndpoint}`)
+    const token = localStorage.getItem('token');
+    fetch(`${API_URL}/${apiEndpoint}`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
       .then(res => res.json())
       .then(data => {
         // Manejar ambos formatos: { data: [...] } y [...]
@@ -33,9 +36,13 @@ const AdminManager: React.FC<AdminManagerProps> = ({ title, apiEndpoint }) => {
   const handleAddItem = () => {
     if (!newItemName.trim()) return;
     
+    const token = localStorage.getItem('token');
     fetch(`${API_URL}/${apiEndpoint}`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
       body: JSON.stringify({ name: newItemName }),
     })
       .then(res => res.json())
@@ -51,7 +58,11 @@ const AdminManager: React.FC<AdminManagerProps> = ({ title, apiEndpoint }) => {
   };
 
   const handleDeleteItem = (id: number) => {
-    fetch(`${API_URL}/${apiEndpoint}/${id}`, { method: 'DELETE' })
+    const token = localStorage.getItem('token');
+    fetch(`${API_URL}/${apiEndpoint}/${id}`, { 
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
       .then(() => {
         setItems(prev => prev.filter(item => item.id !== id));
       });
