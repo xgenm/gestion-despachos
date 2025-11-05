@@ -141,10 +141,12 @@ app.get('/', (req, res) => {
   res.send('Backend del sistema de despachos funcionando!');
 });
 
-// Solo iniciar el servidor en desarrollo local
-if (process.env.NODE_ENV !== 'production') {
+// Iniciar el servidor (excepto cuando se exporta para Vercel)
+if (process.env.VERCEL !== '1') {
   app.listen(port, () => {
-    console.log(`Backend escuchando en http://localhost:${port}`);
+    console.log(`✅ Backend escuchando en puerto ${port}`);
+    console.log(`🌍 Entorno: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`📡 CORS configurado para Vercel frontend`);
   });
 }
 
