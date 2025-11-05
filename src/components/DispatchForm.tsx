@@ -142,10 +142,24 @@ const DispatchForm: React.FC<Props> = ({ onSubmit }) => {
   };
 
   const handleMaterialSelect = (materialId: string) => {
-    setSelectedMaterials(prev => ({
-      ...prev,
-      [materialId]: { selected: !prev[materialId]?.selected, quantity: prev[materialId]?.quantity || 0 },
-    }));
+    // Solo permitir seleccionar UN material a la vez
+    const isCurrentlySelected = selectedMaterials[materialId]?.selected;
+    
+    if (isCurrentlySelected) {
+      // Si ya está seleccionado, deseleccionarlo
+      setSelectedMaterials(prev => ({
+        ...prev,
+        [materialId]: { selected: false, quantity: 0 },
+      }));
+    } else {
+      // Si no está seleccionado, deseleccionar TODOS los demás y seleccionar este
+      const newMaterials: Record<string, { selected: boolean; quantity: number }> = {};
+      Object.keys(selectedMaterials).forEach(key => {
+        newMaterials[key] = { selected: false, quantity: 0 };
+      });
+      newMaterials[materialId] = { selected: true, quantity: selectedMaterials[materialId]?.quantity || 0 };
+      setSelectedMaterials(newMaterials);
+    }
   };
 
   const handleQuantityChange = (materialId: string, quantity: string) => {
@@ -368,7 +382,8 @@ const DispatchForm: React.FC<Props> = ({ onSubmit }) => {
 
           <hr />
 
-          <h5>Materiales - Capacidad: {caminoData ? `${m3Seleccionados.toFixed(1)} / ${formData.m3.toFixed(1)} M³` : 'Selecciona un camión'}</h5>
+          <h5>Material (Solo UNO por camión) - Capacidad: {caminoData ? `${m3Seleccionados.toFixed(1)} / ${formData.m3.toFixed(1)} M³` : 'Selecciona un camión'}</h5>
+          <p className="text-muted small">⚠️ Importante: Cada camión solo puede transportar UN tipo de material por viaje</p>
           {capacidadExcedida && (
             <div className="alert alert-danger" role="alert">
               ⚠️ <strong>Advertencia:</strong> Has seleccionado {m3Seleccionados.toFixed(1)} M³ pero el camión solo tiene capacidad para {formData.m3.toFixed(1)} M³. Por favor, reduce la cantidad.

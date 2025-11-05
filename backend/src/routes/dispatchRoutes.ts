@@ -84,9 +84,9 @@ router.get('/', async (req, res) => {
 
 // POST /api/dispatches
 router.post('/', async (req: AuthRequest, res) => {
-  const { fecha, hora, camion, placa, color, ficha, materials, cliente, celular, total, userId, equipmentId, operatorId } = req.body;
+  const { fecha, hora, camion, placa, color, ficha, m3, materials, cliente, celular, total, userId, equipmentId, operatorId } = req.body;
   
-  console.log('📥 Backend recibiendo despacho:', JSON.stringify({ fecha, hora, camion, placa, cliente, userId, total, materials }, null, 2));
+  console.log('📥 Backend recibiendo despacho:', JSON.stringify({ fecha, hora, camion, placa, m3, cliente, userId, total, materials }, null, 2));
   
   // Validación básica de datos requeridos (despachoNo ya no es necesario, se genera automáticamente)
   if (!fecha || !hora || !camion || !placa || !cliente) {
@@ -181,17 +181,18 @@ router.post('/', async (req: AuthRequest, res) => {
            SET marca = COALESCE($1, marca), 
                color = COALESCE($2, color), 
                ficha = COALESCE($3, ficha),
+               m3 = COALESCE($4, m3),
                updatedAt = CURRENT_TIMESTAMP
-           WHERE placa = $4`,
-          [camion, color, ficha, placa]
+           WHERE placa = $5`,
+          [camion, color, ficha, m3 || null, placa]
         );
       } else {
         // Crear nuevo camión
         console.log('➕ Creando nuevo camión');
         await client.query(
-          `INSERT INTO camiones (placa, marca, color, ficha, estado)
-           VALUES ($1, $2, $3, $4, 'activo')`,
-          [placa, camion || 'Sin especificar', color, ficha]
+          `INSERT INTO camiones (placa, marca, color, ficha, m3, estado)
+           VALUES ($1, $2, $3, $4, $5, 'activo')`,
+          [placa, camion || 'Sin especificar', color, ficha, m3 || null]
         );
       }
     }
