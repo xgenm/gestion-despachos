@@ -163,9 +163,17 @@ const DispatchForm: React.FC<Props> = ({ onSubmit }) => {
   };
 
   const handleQuantityChange = (materialId: string, quantity: string) => {
+    const newQuantity = parseFloat(quantity) || 0;
+    
+    // Validar que no exceda la capacidad del camión
+    if (formData.m3 > 0 && newQuantity > formData.m3) {
+      alert(`⚠️ La cantidad máxima permitida es ${formData.m3.toFixed(1)} M³ (capacidad del camión)`);
+      return;
+    }
+    
     setSelectedMaterials(prev => ({
       ...prev,
-      [materialId]: { ...prev[materialId], quantity: parseFloat(quantity) || 0 },
+      [materialId]: { ...prev[materialId], quantity: newQuantity },
     }));
   };
 
@@ -228,6 +236,16 @@ const DispatchForm: React.FC<Props> = ({ onSubmit }) => {
     
     if (!hasMaterials) {
       alert('⚠️ Debes seleccionar al menos un material');
+      return;
+    }
+    
+    // Validar que la cantidad no exceda la capacidad del camión
+    const totalM3 = Object.keys(selectedMaterials)
+      .filter(key => selectedMaterials[key].selected)
+      .reduce((sum, key) => sum + (selectedMaterials[key].quantity || 0), 0);
+    
+    if (formData.m3 > 0 && totalM3 > formData.m3) {
+      alert(`⚠️ La cantidad total (${totalM3.toFixed(1)} M³) excede la capacidad del camión (${formData.m3.toFixed(1)} M³)`);
       return;
     }
     
@@ -402,10 +420,11 @@ const DispatchForm: React.FC<Props> = ({ onSubmit }) => {
                     <>
                       <Form.Control
                         type="number"
-                        placeholder="M³"
+                        placeholder={formData.m3 > 0 ? `Máx: ${formData.m3.toFixed(1)} M³` : 'M³'}
                         value={selectedMaterials[material.id]?.quantity || ''}
                         onChange={(e) => handleQuantityChange(material.id, e.target.value)}
                         min="0"
+                        max={formData.m3 > 0 ? formData.m3 : undefined}
                         step="0.1"
                       />
                       <InputGroup.Text>
