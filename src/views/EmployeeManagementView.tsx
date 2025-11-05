@@ -37,7 +37,8 @@ const EmployeeManagementView: React.FC = () => {
         
         if (response.ok) {
           const data = await response.json();
-          setEmployees(data);
+          // Validar que sea array
+          setEmployees(Array.isArray(data) ? data : (data.data || []));
         } else {
           console.error('Error al cargar empleados:', response.statusText);
           // Fallback: mostrar datos simulados
@@ -102,7 +103,8 @@ const EmployeeManagementView: React.FC = () => {
         });
         if (usersResponse.ok) {
           const usersData = await usersResponse.json();
-          setEmployees(usersData);
+          // Validar que sea array
+          setEmployees(Array.isArray(usersData) ? usersData : (usersData.data || []));
         }
         // Limpiar formulario
         setUsername('');

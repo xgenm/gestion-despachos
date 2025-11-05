@@ -4,7 +4,7 @@ import { Card, Table, Form, Button, Modal, Alert } from 'react-bootstrap';
 interface Product {
   id: number;
   name: string;
-  price: number;
+  price: number | string; // Puede venir como string desde la BD
   unit: string;
   active: boolean;
 }
@@ -42,7 +42,11 @@ const ProductPriceManager: React.FC = () => {
 
   const handleEditPrice = (product: Product) => {
     setEditingId(product.id);
-    setEditForm({ name: product.name, price: product.price, unit: product.unit });
+    setEditForm({ 
+      name: product.name, 
+      price: typeof product.price === 'string' ? parseFloat(product.price) : product.price, 
+      unit: product.unit 
+    });
   };
 
   const handleSavePrice = async (productId: number) => {
@@ -182,7 +186,7 @@ const ProductPriceManager: React.FC = () => {
                       step="0.01"
                     />
                   ) : (
-                    product.price.toFixed(2)
+                    Number(product.price).toFixed(2)
                   )}
                 </td>
                 <td>

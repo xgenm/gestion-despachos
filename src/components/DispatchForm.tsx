@@ -128,8 +128,9 @@ const DispatchForm: React.FC<Props> = ({ onSubmit }) => {
 
   // Validar si se excede la capacidad del camión
   useEffect(() => {
-    if (caminoData && formData.m3 > 0) {
-      setCapacidadExcedida(m3Seleccionados > formData.m3);
+    const m3Capacity = Number(formData.m3);
+    if (caminoData && m3Capacity > 0) {
+      setCapacidadExcedida(m3Seleccionados > m3Capacity);
     }
   }, [m3Seleccionados, formData.m3, caminoData]);
 
@@ -166,8 +167,9 @@ const DispatchForm: React.FC<Props> = ({ onSubmit }) => {
     const newQuantity = parseFloat(quantity) || 0;
     
     // Validar que no exceda la capacidad del camión
-    if (formData.m3 > 0 && newQuantity > formData.m3) {
-      alert(`⚠️ La cantidad máxima permitida es ${formData.m3.toFixed(1)} M³ (capacidad del camión)`);
+    const m3Capacity = Number(formData.m3);
+    if (m3Capacity > 0 && newQuantity > m3Capacity) {
+      alert(`⚠️ La cantidad máxima permitida es ${m3Capacity.toFixed(1)} M³ (capacidad del camión)`);
       return;
     }
     
@@ -196,7 +198,7 @@ const DispatchForm: React.FC<Props> = ({ onSubmit }) => {
       camion: camino.marca,
       color: camino.color,
       ficha: camino.ficha,
-      m3: camino.m3,
+      m3: typeof camino.m3 === 'string' ? parseFloat(camino.m3) : (camino.m3 || 0),
       caminoId: camino.id
     }));
   };
@@ -244,8 +246,9 @@ const DispatchForm: React.FC<Props> = ({ onSubmit }) => {
       .filter(key => selectedMaterials[key].selected)
       .reduce((sum, key) => sum + (selectedMaterials[key].quantity || 0), 0);
     
-    if (formData.m3 > 0 && totalM3 > formData.m3) {
-      alert(`⚠️ La cantidad total (${totalM3.toFixed(1)} M³) excede la capacidad del camión (${formData.m3.toFixed(1)} M³)`);
+    const m3Capacity = Number(formData.m3);
+    if (m3Capacity > 0 && totalM3 > m3Capacity) {
+      alert(`⚠️ La cantidad total (${totalM3.toFixed(1)} M³) excede la capacidad del camión (${m3Capacity.toFixed(1)} M³)`);
       return;
     }
     
@@ -400,11 +403,11 @@ const DispatchForm: React.FC<Props> = ({ onSubmit }) => {
 
           <hr />
 
-          <h5>Material (Solo UNO por camión) - Capacidad: {caminoData ? `${m3Seleccionados.toFixed(1)} / ${formData.m3.toFixed(1)} M³` : 'Selecciona un camión'}</h5>
+          <h5>Material (Solo UNO por camión) - Capacidad: {caminoData ? `${m3Seleccionados.toFixed(1)} / ${Number(formData.m3).toFixed(1)} M³` : 'Selecciona un camión'}</h5>
           <p className="text-muted small">⚠️ Importante: Cada camión solo puede transportar UN tipo de material por viaje</p>
           {capacidadExcedida && (
             <div className="alert alert-danger" role="alert">
-              ⚠️ <strong>Advertencia:</strong> Has seleccionado {m3Seleccionados.toFixed(1)} M³ pero el camión solo tiene capacidad para {formData.m3.toFixed(1)} M³. Por favor, reduce la cantidad.
+              ⚠️ <strong>Advertencia:</strong> Has seleccionado {m3Seleccionados.toFixed(1)} M³ pero el camión solo tiene capacidad para {Number(formData.m3).toFixed(1)} M³. Por favor, reduce la cantidad.
             </div>
           )}
           <Row>
@@ -420,11 +423,11 @@ const DispatchForm: React.FC<Props> = ({ onSubmit }) => {
                     <>
                       <Form.Control
                         type="number"
-                        placeholder={formData.m3 > 0 ? `Máx: ${formData.m3.toFixed(1)} M³` : 'M³'}
+                        placeholder={Number(formData.m3) > 0 ? `Máx: ${Number(formData.m3).toFixed(1)} M³` : 'M³'}
                         value={selectedMaterials[material.id]?.quantity || ''}
                         onChange={(e) => handleQuantityChange(material.id, e.target.value)}
                         min="0"
-                        max={formData.m3 > 0 ? formData.m3 : undefined}
+                        max={Number(formData.m3) > 0 ? Number(formData.m3) : undefined}
                         step="0.1"
                       />
                       <InputGroup.Text>
