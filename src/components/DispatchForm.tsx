@@ -191,16 +191,19 @@ const DispatchForm: React.FC<Props> = ({ onSubmit }) => {
   };
 
   const handleCaminoFound = (camino: any) => {
+    console.log('🚛 handleCaminoFound ejecutado con:', camino);
     setCaminoData(camino);
-    setFormData(prev => ({
-      ...prev,
+    const newFormData = {
+      ...formData,
       placa: camino.placa,
       camion: camino.marca,
       color: camino.color,
       ficha: camino.ficha,
       m3: typeof camino.m3 === 'string' ? parseFloat(camino.m3) : (camino.m3 || 0),
       caminoId: camino.id
-    }));
+    };
+    console.log('📝 Nuevo formData:', newFormData);
+    setFormData(newFormData);
   };
 
   const handleCaminoNotFound = () => {
