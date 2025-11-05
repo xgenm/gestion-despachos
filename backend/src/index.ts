@@ -23,29 +23,31 @@ const port = process.env.PORT || 3002;
 // Configuración de CORS para Railway + Vercel
 const corsOptions = {
   origin: function (origin: any, callback: any) {
-    const allowedOrigins = [
-      'http://localhost:3001',
-      'http://localhost:3000',
-      'https://gestion-despachos-2sls.vercel.app',
-      'https://gestion-despachos-2sls-mo7io32tl-xgens-projects.vercel.app',
-      'https://gestion-despachos-2sls-9i56hdfra-xgens-projects.vercel.app',
-      'https://gestion-despachos-2sls-lsxchnd5s-xgens-projects.vercel.app',
-      process.env.FRONTEND_URL
-    ].filter(Boolean);
-    
     // Permitir requests sin origin (Postman, curl, etc.)
     if (!origin) {
       return callback(null, true);
     }
     
-    // Verificar si el origin está en la lista permitida
-    const isAllowed = allowedOrigins.some(allowed => 
-      origin === allowed || 
-      origin.startsWith(allowed) || 
-      allowed?.startsWith(origin)
-    );
+    // Patrones permitidos
+    const allowedPatterns = [
+      /^http:\/\/localhost:(3000|3001)$/,  // Localhost desarrollo
+      /^https:\/\/gestion-despachos-2sls.*\.vercel\.app$/,  // Todas las URLs de Vercel (production y preview)
+      /^https:\/\/.*-xgens-projects\.vercel\.app$/,  // Preview deployments de Vercel
+    ];
     
-    if (isAllowed) {
+    // Lista explícita de orígenes permitidos
+    const allowedOrigins = [
+      'https://gestion-despachos-2sls.vercel.app',
+      process.env.FRONTEND_URL
+    ].filter(Boolean);
+    
+    // Verificar contra lista explícita
+    const inList = allowedOrigins.some(allowed => origin === allowed);
+    
+    // Verificar contra patrones regex
+    const matchesPattern = allowedPatterns.some(pattern => pattern.test(origin));
+    
+    if (inList || matchesPattern) {
       callback(null, true);
     } else {
       console.log('❌ Origin bloqueado por CORS:', origin);
