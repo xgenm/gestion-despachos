@@ -17,10 +17,23 @@ const dotenv_1 = __importDefault(require("dotenv"));
 const User_1 = require("../models/User");
 dotenv_1.default.config();
 // Configuración de la base de datos PostgreSQL
-const pool = new pg_1.Pool({
-    connectionString: process.env.DATABASE_URL,
-    ssl: false // Deshabilitar SSL para desarrollo local
-});
+const getPoolConfig = () => {
+    const config = {
+        connectionString: process.env.DATABASE_URL
+    };
+    // En producción (Render), requerir SSL
+    // En desarrollo local, deshabilitarlo
+    if (process.env.NODE_ENV === 'production') {
+        config.ssl = {
+            rejectUnauthorized: false
+        };
+    }
+    else {
+        config.ssl = false;
+    }
+    return config;
+};
+const pool = new pg_1.Pool(getPoolConfig());
 // Función para inicializar las tablas
 const initializeTables = () => __awaiter(void 0, void 0, void 0, function* () {
     let client;
@@ -84,6 +97,20 @@ const initializeTables = () => __awaiter(void 0, void 0, void 0, function* () {
         id SERIAL PRIMARY KEY,
         name TEXT NOT NULL,
         companyId INTEGER REFERENCES companies(id)
+      )
+    `);
+        // Tabla de Camiones
+        yield client.query(`
+      CREATE TABLE IF NOT EXISTS camiones (
+        id SERIAL PRIMARY KEY,
+        placa TEXT NOT NULL UNIQUE,
+        marca TEXT,
+        color TEXT,
+        m3 DECIMAL(10, 2),
+        ficha TEXT,
+        estado TEXT DEFAULT 'activo',
+        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
         // Inicializar tabla de administradores
