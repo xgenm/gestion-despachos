@@ -19,19 +19,19 @@ let nextDispatchId = 1;
 // GET /api/dispatches
 router.get('/', async (req, res) => {
   const disableAuth = process.env.DISABLE_AUTH === 'true';
-  const { placa } = req.query; // Parámetro de búsqueda por placa
-  
+  const { placa } = req.query;
+
   if (disableAuth) {
     // En modo desarrollo, retornar despachos simulados
     let result = devDispatches;
     if (placa) {
-      result = devDispatches.filter(d => d.placa && d.placa.toUpperCase().includes((placa as string).toUpperCase()));
+      result = devDispatches.filter(d => d.placa.includes(placa as string));
     }
     return res.json({ data: result });
   }
-  
+
   const client = await db.connect();
-  
+
   try {
     let sql = `
       SELECT 
@@ -44,19 +44,23 @@ router.get('/', async (req, res) => {
       LEFT JOIN equipment e ON e.id = d.equipmentId
       LEFT JOIN operators o ON o.id = d.operatorId
     `;
-    
     const params: any[] = [];
-    
-    // Filtrar por placa si se proporciona
+
+    const isPostgres = !!process.env.DATABASE_URL;
     if (placa) {
-      sql += ` WHERE d.placa ILIKE $1`;
-      params.push(`%${placa}%`);
+      if (isPostgres) {
+        sql += ` WHERE d.placa ILIKE $1`;
+        params.push(`%${placa}%`);
+      } else {
+        sql += ` WHERE d.placa LIKE ?`;
+        params.push(`%${placa}%`);
+      }
     }
-    
-    sql += ` ORDER BY d.fecha DESC, d.hora DESC`;
-    
+
+    sql += ` ORDER BY d.fecha DESC`;
+
     const result = await client.query(sql, params);
-    
+
     // Mapear las columnas de PostgreSQL (minúsculas) al formato esperado por el frontend (camelCase)
     const mappedData = result.rows.map(row => ({
       id: row.id,
@@ -99,9 +103,9 @@ router.get('/', async (req, res) => {
 
 // POST /api/dispatches
 router.post('/', async (req: AuthRequest, res) => {
-  const { fecha, hora, camion, placa, color, ficha, m3, materials, cliente, celular, total, userId, equipmentId, operatorId } = req.body;
+  const { fecha, hora, camion, placa, color, ficha, materials, cliente, celular, total, userId, equipmentId, operatorId } = req.body;
   
-  console.log('📥 Backend recibiendo despacho:', JSON.stringify({ fecha, hora, camion, placa, m3, cliente, userId, total, materials }, null, 2));
+  console.log('📥 Backend recibiendo despacho:', JSON.stringify({ fecha, hora, camion, placa, cliente, userId, total, materials }, null, 2));
   
   // Validación básica de datos requeridos (despachoNo ya no es necesario, se genera automáticamente)
   if (!fecha || !hora || !camion || !placa || !cliente) {
@@ -178,41 +182,7 @@ router.post('/', async (req: AuthRequest, res) => {
   const client = await db.connect();
   
   try {
-    // 1. Guardar o actualizar datos del camión
-    if (placa) {
-      console.log('🚛 Procesando datos del camión, placa:', placa);
-      
-      // Verificar si el camión ya existe
-      const camionExistente = await client.query(
-        'SELECT id FROM camiones WHERE placa = $1',
-        [placa]
-      );
-      
-      if (camionExistente.rows.length > 0) {
-        // Actualizar datos del camión existente
-        console.log('📝 Actualizando camión existente');
-        await client.query(
-          `UPDATE camiones 
-           SET marca = COALESCE($1, marca), 
-               color = COALESCE($2, color), 
-               ficha = COALESCE($3, ficha),
-               m3 = COALESCE($4, m3),
-               updatedAt = CURRENT_TIMESTAMP
-           WHERE placa = $5`,
-          [camion, color, ficha, m3 || null, placa]
-        );
-      } else {
-        // Crear nuevo camión
-        console.log('➕ Creando nuevo camión');
-        await client.query(
-          `INSERT INTO camiones (placa, marca, color, ficha, m3, estado)
-           VALUES ($1, $2, $3, $4, $5, 'activo')`,
-          [placa, camion || 'Sin especificar', color, ficha, m3 || null]
-        );
-      }
-    }
-    
-    // 2. Obtener siguiente número de despacho (atómico)
+    // Obtener siguiente número de despacho (atómico)
     const numberResult = await client.query('SELECT get_next_dispatch_number() as next_number');
     const nextNumber = numberResult.rows[0].next_number;
     const despachoNo = String(nextNumber).padStart(7, '0'); // 7 dígitos numéricos

@@ -22,13 +22,18 @@ let nextDispatchId = 1;
 // GET /api/dispatches
 router.get('/', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const disableAuth = process.env.DISABLE_AUTH === 'true';
+    const { placa } = req.query; // Parámetro de búsqueda por placa
     if (disableAuth) {
         // En modo desarrollo, retornar despachos simulados
-        return res.json({ data: devDispatches });
+        let result = devDispatches;
+        if (placa) {
+            result = devDispatches.filter(d => d.placa && d.placa.toUpperCase().includes(placa.toUpperCase()));
+        }
+        return res.json({ data: result });
     }
     const client = yield database_1.default.connect();
     try {
-        const sql = `
+        let sql = `
       SELECT 
         d.*,
         u.username as userName,
@@ -38,9 +43,15 @@ router.get('/', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
       LEFT JOIN users u ON u.id = d.userId
       LEFT JOIN equipment e ON e.id = d.equipmentId
       LEFT JOIN operators o ON o.id = d.operatorId
-      ORDER BY d.fecha DESC
     `;
-        const result = yield client.query(sql);
+        const params = [];
+        // Filtrar por placa si se proporciona
+        if (placa) {
+            sql += ` WHERE d.placa ILIKE $1`;
+            params.push(`%${placa}%`);
+        }
+        sql += ` ORDER BY d.fecha DESC, d.hora DESC`;
+        const result = yield client.query(sql, params);
         // Mapear las columnas de PostgreSQL (minúsculas) al formato esperado por el frontend (camelCase)
         const mappedData = result.rows.map(row => ({
             id: row.id,
