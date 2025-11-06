@@ -19,16 +19,21 @@ let nextDispatchId = 1;
 // GET /api/dispatches
 router.get('/', async (req, res) => {
   const disableAuth = process.env.DISABLE_AUTH === 'true';
-  
+  const { placa } = req.query;
+
   if (disableAuth) {
     // En modo desarrollo, retornar despachos simulados
-    return res.json({ data: devDispatches });
+    let result = devDispatches;
+    if (placa) {
+      result = devDispatches.filter(d => d.placa.includes(placa as string));
+    }
+    return res.json({ data: result });
   }
-  
+
   const client = await db.connect();
-  
+
   try {
-    const sql = `
+    let sql = `
       SELECT 
         d.*,
         u.username as userName,
@@ -38,10 +43,24 @@ router.get('/', async (req, res) => {
       LEFT JOIN users u ON u.id = d.userId
       LEFT JOIN equipment e ON e.id = d.equipmentId
       LEFT JOIN operators o ON o.id = d.operatorId
-      ORDER BY d.fecha DESC
     `;
-    const result = await client.query(sql);
-    
+    const params: any[] = [];
+
+    const isPostgres = !!process.env.DATABASE_URL;
+    if (placa) {
+      if (isPostgres) {
+        sql += ` WHERE d.placa ILIKE $1`;
+        params.push(`%${placa}%`);
+      } else {
+        sql += ` WHERE d.placa LIKE ?`;
+        params.push(`%${placa}%`);
+      }
+    }
+
+    sql += ` ORDER BY d.fecha DESC`;
+
+    const result = await client.query(sql, params);
+
     // Mapear las columnas de PostgreSQL (minúsculas) al formato esperado por el frontend (camelCase)
     const mappedData = result.rows.map(row => ({
       id: row.id,

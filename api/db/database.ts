@@ -40,6 +40,17 @@ const postgresSchema = `
     createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
   );
+
+  CREATE SEQUENCE IF NOT EXISTS dispatch_number_seq START 1;
+
+  CREATE OR REPLACE FUNCTION get_next_dispatch_number() RETURNS INTEGER AS $$
+  DECLARE
+    next_val INTEGER;
+  BEGIN
+    next_val := nextval('dispatch_number_seq');
+    RETURN next_val;
+  END;
+  $$ LANGUAGE plpgsql;
 `;
 
 const sqliteSchema = `
