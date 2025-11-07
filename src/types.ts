@@ -8,6 +8,7 @@ export interface Dispatch {
   color: string;
   ficha: string;
   m3: number;
+  numeroOrden: string; // Número de orden del transportista/empresa
   materials: { id: string; quantity: number }[];
   cliente: string;
   celular: string;

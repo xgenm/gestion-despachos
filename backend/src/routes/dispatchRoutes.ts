@@ -99,16 +99,17 @@ router.get('/', async (req, res) => {
 
 // POST /api/dispatches
 router.post('/', async (req: AuthRequest, res) => {
-  const { fecha, hora, camion, placa, color, ficha, m3, materials, cliente, celular, total, userId, equipmentId, operatorId } = req.body;
+  const { fecha, hora, camion, placa, color, ficha, numeroOrden, m3, materials, cliente, celular, total, userId, equipmentId, operatorId } = req.body;
   
   // Convertir campos de texto a MAYÚSCULAS
   const camionUpper = camion ? camion.toUpperCase() : '';
   const placaUpper = placa ? placa.toUpperCase() : '';
   const colorUpper = color ? color.toUpperCase() : '';
   const fichaUpper = ficha ? ficha.toUpperCase() : '';
+  const numeroOrdenUpper = numeroOrden ? numeroOrden.toUpperCase() : '';
   const clienteUpper = cliente ? cliente.toUpperCase() : '';
   
-  console.log('📥 Backend recibiendo despacho:', JSON.stringify({ fecha, hora, camion: camionUpper, placa: placaUpper, m3, cliente: clienteUpper, userId, total, materials }, null, 2));
+  console.log('📥 Backend recibiendo despacho:', JSON.stringify({ fecha, hora, camion: camionUpper, placa: placaUpper, numeroOrden: numeroOrdenUpper, m3, cliente: clienteUpper, userId, total, materials }, null, 2));
   
   // Validación básica de datos requeridos (despachoNo ya no es necesario, se genera automáticamente)
   if (!fecha || !hora || !camionUpper || !placaUpper || !clienteUpper) {
@@ -186,7 +187,7 @@ router.post('/', async (req: AuthRequest, res) => {
   const client = await db.connect();
   
   try {
-    // 1. Guardar o actualizar datos del camión
+    // 1. Guardar o actualizar datos del camión (SIN numeroOrden, ese es solo del ticket)
     if (placaUpper) {
       console.log('🚛 Procesando datos del camión, placa:', placaUpper, 'm3:', finalM3);
       
@@ -227,9 +228,9 @@ router.post('/', async (req: AuthRequest, res) => {
     
     console.log('🔢 Número generado:', despachoNo);
     
-    const sql = `INSERT INTO dispatches (despachoNo, fecha, hora, camion, placa, color, ficha, materials, cliente, celular, total, userId, equipmentId, operatorId)
-                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) RETURNING id`;
-    const params = [despachoNo, fecha, hora, camionUpper, placaUpper, colorUpper, fichaUpper, JSON.stringify(finalMaterials), clienteUpper, celular, finalTotal, finalUserId, finalEquipmentId, finalOperatorId];
+    const sql = `INSERT INTO dispatches (despachoNo, fecha, hora, camion, placa, color, ficha, numeroOrden, materials, cliente, celular, total, userId, equipmentId, operatorId)
+                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) RETURNING id`;
+    const params = [despachoNo, fecha, hora, camionUpper, placaUpper, colorUpper, fichaUpper, numeroOrdenUpper, JSON.stringify(finalMaterials), clienteUpper, celular, finalTotal, finalUserId, finalEquipmentId, finalOperatorId];
     
     console.log('💾 Insertando en BD con userId:', finalUserId);
     

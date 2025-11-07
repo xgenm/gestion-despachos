@@ -19,13 +19,14 @@ const initialFormState = {
   placa: '',
   color: '',
   ficha: '',
-  m3: 0, // Nuevo campo
+  numeroOrden: '', // Número de orden del transportista
+  m3: 0,
   cliente: '',
   celular: '',
   userId: 0,
   equipmentId: 0,
   operatorId: 0,
-  caminoId: 0, // Nuevo campo
+  caminoId: 0,
 };
 
 const materialsData = [
@@ -138,7 +139,7 @@ const DispatchForm: React.FC<Props> = ({ onSubmit }) => {
     const { id, value } = event.target;
     
     // Campos que deben convertirse a MAYÚSCULAS
-    const uppercaseFields = ['camion', 'color', 'ficha', 'cliente'];
+    const uppercaseFields = ['camion', 'color', 'ficha', 'numeroOrden', 'cliente'];
     const numericFields = ['userId', 'equipmentId', 'operatorId'];
     
     let finalValue: any;
@@ -220,6 +221,7 @@ const DispatchForm: React.FC<Props> = ({ onSubmit }) => {
       camion: camino.marca,
       color: camino.color,
       ficha: camino.ficha,
+      // numeroOrden NO se autorellena, se escribe manualmente cada vez
       m3: typeof camino.m3 === 'string' ? parseFloat(camino.m3) : (camino.m3 || 0),
       caminoId: camino.id
     };
@@ -419,6 +421,19 @@ const DispatchForm: React.FC<Props> = ({ onSubmit }) => {
                 placeholder="Alfanumérico"
               />
               {user?.role === 'employee' && caminoData && <Form.Text className="text-muted">Camión ya registrado (solo admin puede modificar)</Form.Text>}
+            </Form.Group>
+          </Row>
+          
+          <Row className="mb-3">
+            <Form.Group as={Col} controlId="numeroOrden">
+              <Form.Label>Número de Orden</Form.Label>
+              <Form.Control 
+                type="text" 
+                value={formData.numeroOrden} 
+                onChange={handleInputChange}
+                placeholder="Número de orden del transportista (proporcionado verbalmente)"
+              />
+              <Form.Text className="text-muted">Este número lo proporciona la empresa transportista para cada viaje</Form.Text>
             </Form.Group>
             <Form.Group as={Col} controlId="m3">
               <Form.Label>M³ *</Form.Label>
