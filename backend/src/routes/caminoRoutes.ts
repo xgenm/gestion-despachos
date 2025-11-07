@@ -18,21 +18,55 @@ router.get('/', async (req: AuthRequest, res: Response) => {
       return res.status(400).json({ error: 'Parámetro placa es requerido' });
     }
 
+    console.log('🔍 Buscando camión con placa:', placa);
+
     const client = await db.connect();
     try {
-      const result = await client.query(
+      // 1. Buscar primero en la tabla camiones
+      const camionResult = await client.query(
         'SELECT id, placa, marca, color, m3, ficha FROM camiones WHERE placa = $1',
         [placa]
       );
 
-      if (result.rows.length === 0) {
-        return res.json({ found: false, data: null });
+      if (camionResult.rows.length > 0) {
+        console.log('✅ Camión encontrado en tabla camiones:', camionResult.rows[0]);
+        return res.json({ 
+          found: true, 
+          data: camionResult.rows[0] 
+        });
       }
 
-      res.json({ 
-        found: true, 
-        data: result.rows[0] 
-      });
+      // 2. Si NO existe en camiones, buscar en el último despacho con esa placa
+      console.log('🔍 No encontrado en camiones, buscando en despachos...');
+      const dispatchResult = await client.query(
+        `SELECT placa, camion as marca, color, ficha 
+         FROM dispatches 
+         WHERE placa = $1 
+         ORDER BY fecha DESC, hora DESC 
+         LIMIT 1`,
+        [placa]
+      );
+
+      if (dispatchResult.rows.length > 0) {
+        const dispatchData = dispatchResult.rows[0];
+        console.log('✅ Datos encontrados en despacho anterior:', dispatchData);
+        
+        // Retornar datos del despacho (sin id porque no está en tabla camiones aún)
+        return res.json({ 
+          found: true, 
+          data: {
+            placa: dispatchData.placa,
+            marca: dispatchData.marca,
+            color: dispatchData.color,
+            ficha: dispatchData.ficha,
+            m3: null // No tenemos M3 en despachos antiguos
+          }
+        });
+      }
+
+      // 3. No encontrado en ninguna parte
+      console.log('❌ Camión no encontrado');
+      return res.json({ found: false, data: null });
     } finally {
       client.release();
     }
