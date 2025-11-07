@@ -136,9 +136,24 @@ const DispatchForm: React.FC<Props> = ({ onSubmit }) => {
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { id, value } = event.target;
-    // Convertir a número si es un campo de ID
+    
+    // Campos que deben convertirse a MAYÚSCULAS
+    const uppercaseFields = ['camion', 'color', 'ficha', 'cliente'];
     const numericFields = ['userId', 'equipmentId', 'operatorId'];
-    const finalValue = numericFields.includes(id) ? parseInt(value) || 0 : value;
+    
+    let finalValue: any;
+    
+    if (uppercaseFields.includes(id)) {
+      // Convertir a MAYÚSCULAS
+      finalValue = value.toUpperCase();
+    } else if (numericFields.includes(id)) {
+      // Convertir a número
+      finalValue = parseInt(value) || 0;
+    } else {
+      // Mantener el valor original
+      finalValue = value;
+    }
+    
     setFormData(prev => ({ ...prev, [id]: finalValue }));
   };
 

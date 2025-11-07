@@ -101,25 +101,33 @@ router.get('/', async (req, res) => {
 router.post('/', async (req: AuthRequest, res) => {
   const { fecha, hora, camion, placa, color, ficha, m3, materials, cliente, celular, total, userId, equipmentId, operatorId } = req.body;
   
-  console.log('📥 Backend recibiendo despacho:', JSON.stringify({ fecha, hora, camion, placa, m3, cliente, userId, total, materials }, null, 2));
+  // Convertir campos de texto a MAYÚSCULAS
+  const camionUpper = camion ? camion.toUpperCase() : '';
+  const placaUpper = placa ? placa.toUpperCase() : '';
+  const colorUpper = color ? color.toUpperCase() : '';
+  const fichaUpper = ficha ? ficha.toUpperCase() : '';
+  const clienteUpper = cliente ? cliente.toUpperCase() : '';
+  
+  console.log('📥 Backend recibiendo despacho:', JSON.stringify({ fecha, hora, camion: camionUpper, placa: placaUpper, m3, cliente: clienteUpper, userId, total, materials }, null, 2));
   
   // Validación básica de datos requeridos (despachoNo ya no es necesario, se genera automáticamente)
-  if (!fecha || !hora || !camion || !placa || !cliente) {
-    console.error('❌ Faltan campos requeridos:', { fecha: !!fecha, hora: !!hora, camion: !!camion, placa: !!placa, cliente: !!cliente });
+  if (!fecha || !hora || !camionUpper || !placaUpper || !clienteUpper) {
+    console.error('❌ Faltan campos requeridos:', { fecha: !!fecha, hora: !!hora, camion: !!camionUpper, placa: !!placaUpper, cliente: !!clienteUpper });
     return res.status(400).json({ 
       error: 'Faltan campos requeridos',
       missing: {
         fecha: !fecha,
         hora: !hora,
-        camion: !camion,
-        placa: !placa,
-        cliente: !cliente
+        camion: !camionUpper,
+        placa: !placaUpper,
+        cliente: !clienteUpper
       }
     });
   }
   
   // Convertir y validar tipos
   const finalTotal = typeof total === 'string' ? parseFloat(total) : total;
+  const finalM3 = m3 && m3 > 0 ? (typeof m3 === 'string' ? parseFloat(m3) : m3) : null;
   const finalUserId = userId && userId > 0 ? userId : 1; // Fallback a admin si no hay userId válido
   const finalEquipmentId = equipmentId && equipmentId > 0 ? equipmentId : null;
   const finalOperatorId = operatorId && operatorId > 0 ? operatorId : null;
@@ -144,7 +152,7 @@ router.post('/', async (req: AuthRequest, res) => {
     finalMaterials = [];
   }
   
-  console.log('✅ Datos validados:', { userId: finalUserId, total: finalTotal, materials: finalMaterials.length });
+  console.log('✅ Datos validados:', { userId: finalUserId, total: finalTotal, m3: finalM3, materials: finalMaterials.length });
   
   const disableAuth = process.env.DISABLE_AUTH === 'true';
   
@@ -156,12 +164,12 @@ router.post('/', async (req: AuthRequest, res) => {
       despachoNo,
       fecha,
       hora,
-      camion,
-      placa,
-      color,
-      ficha,
+      camion: camionUpper,
+      placa: placaUpper,
+      color: colorUpper,
+      ficha: fichaUpper,
       materials: finalMaterials,
-      cliente,
+      cliente: clienteUpper,
       celular,
       total: finalTotal,
       userId: finalUserId,
@@ -179,13 +187,13 @@ router.post('/', async (req: AuthRequest, res) => {
   
   try {
     // 1. Guardar o actualizar datos del camión
-    if (placa) {
-      console.log('🚛 Procesando datos del camión, placa:', placa);
+    if (placaUpper) {
+      console.log('🚛 Procesando datos del camión, placa:', placaUpper, 'm3:', finalM3);
       
       // Verificar si el camión ya existe
       const camionExistente = await client.query(
         'SELECT id FROM camiones WHERE placa = $1',
-        [placa]
+        [placaUpper]
       );
       
       if (camionExistente.rows.length > 0) {
@@ -199,15 +207,15 @@ router.post('/', async (req: AuthRequest, res) => {
                m3 = COALESCE($4, m3),
                updatedAt = CURRENT_TIMESTAMP
            WHERE placa = $5`,
-          [camion, color, ficha, m3 || null, placa]
+          [camionUpper, colorUpper, fichaUpper, finalM3, placaUpper]
         );
       } else {
         // Crear nuevo camión
-        console.log('➕ Creando nuevo camión');
+        console.log('➕ Creando nuevo camión con M³:', finalM3);
         await client.query(
           `INSERT INTO camiones (placa, marca, color, ficha, m3, estado)
            VALUES ($1, $2, $3, $4, $5, 'activo')`,
-          [placa, camion || 'Sin especificar', color, ficha, m3 || null]
+          [placaUpper, camionUpper || 'SIN ESPECIFICAR', colorUpper, fichaUpper, finalM3]
         );
       }
     }
@@ -221,7 +229,7 @@ router.post('/', async (req: AuthRequest, res) => {
     
     const sql = `INSERT INTO dispatches (despachoNo, fecha, hora, camion, placa, color, ficha, materials, cliente, celular, total, userId, equipmentId, operatorId)
                  VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) RETURNING id`;
-    const params = [despachoNo, fecha, hora, camion, placa, color, ficha, JSON.stringify(finalMaterials), cliente, celular, finalTotal, finalUserId, finalEquipmentId, finalOperatorId];
+    const params = [despachoNo, fecha, hora, camionUpper, placaUpper, colorUpper, fichaUpper, JSON.stringify(finalMaterials), clienteUpper, celular, finalTotal, finalUserId, finalEquipmentId, finalOperatorId];
     
     console.log('💾 Insertando en BD con userId:', finalUserId);
     
