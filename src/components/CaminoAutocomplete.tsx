@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Form, Button, Alert } from 'react-bootstrap';
-import { useAuth } from '../contexts/AuthContext';
 
 interface CaminoData {
   id: number;
@@ -28,7 +27,6 @@ const CaminoAutocomplete: React.FC<Props> = ({
   onCaminoNotFound,
   isReadOnly 
 }) => {
-  const { user } = useAuth();
   const [searchMessage, setSearchMessage] = useState<string>('');
   const [isSearching, setIsSearching] = useState(false);
   const [showNewCaminoForm, setShowNewCaminoForm] = useState(false);
