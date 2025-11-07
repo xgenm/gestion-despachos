@@ -89,6 +89,9 @@ const DispatchDetailModal: React.FC<DispatchDetailModalProps> = ({ dispatch, sho
                 <p><strong>Placa:</strong> {dispatch.placa || 'No especificado'}</p>
                 <p><strong>Color:</strong> {dispatch.color || 'No especificado'}</p>
                 <p><strong>Ficha:</strong> {dispatch.ficha || 'No especificado'}</p>
+                {dispatch.numeroOrden && (
+                  <p><strong>Número de Orden:</strong> {dispatch.numeroOrden}</p>
+                )}
               </Col>
             </Row>
           </Card.Body>

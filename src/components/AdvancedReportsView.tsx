@@ -159,6 +159,7 @@ const AdvancedReportsView: React.FC = () => {
       'Placa': d.placa,
       'Color': d.color,
       'Ficha': d.ficha,
+      'Número de Orden': d.numeroOrden || '',
       'Recibido por': d.recibido,
       'Empleado': d.userName || 'N/A',
       'Equipo': d.equipmentName || 'N/A',
@@ -169,8 +170,8 @@ const AdvancedReportsView: React.FC = () => {
     const worksheet = XLSX.utils.json_to_sheet(data);
     worksheet['!cols'] = [
       { wch: 15 }, { wch: 12 }, { wch: 25 }, { wch: 15 },
-      { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 20 },
-      { wch: 20 }, { wch: 15 }, { wch: 15 }, { wch: 15 }
+      { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 18 },
+      { wch: 20 }, { wch: 20 }, { wch: 15 }, { wch: 15 }, { wch: 15 }
     ];
 
     const workbook = XLSX.utils.book_new();
@@ -396,6 +397,7 @@ const AdvancedReportsView: React.FC = () => {
                     <th>Cliente</th>
                     <th>Camión</th>
                     <th>Placa</th>
+                    <th>Nº Orden</th>
                     <th>Empleado</th>
                     <th>Equipo</th>
                     <th>Operario</th>
@@ -410,6 +412,7 @@ const AdvancedReportsView: React.FC = () => {
                       <td>{dispatch.cliente}</td>
                       <td>{dispatch.camion}</td>
                       <td>{dispatch.placa}</td>
+                      <td>{dispatch.numeroOrden || '-'}</td>
                       <td>{dispatch.userName || 'N/A'}</td>
                       <td>{dispatch.equipmentName || 'N/A'}</td>
                       <td>{dispatch.operatorName || 'N/A'}</td>
