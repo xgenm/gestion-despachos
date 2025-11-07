@@ -118,7 +118,7 @@ const CaminoAutocomplete: React.FC<Props> = ({
 
   return (
     <div className="mb-3 p-3 bg-light rounded">
-      <h5>Buscar/Crear Camión por Placa</h5>
+      <h5>Buscar/Crear Camión por Placa [v2.1]</h5>
       <Form onSubmit={handleSearchPlaca}>
         <Form.Group className="mb-3">
           <Form.Label>Placa</Form.Label>
