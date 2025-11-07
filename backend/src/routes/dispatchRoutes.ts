@@ -67,6 +67,8 @@ router.get('/', async (req, res) => {
       placa: row.placa,
       color: row.color,
       ficha: row.ficha,
+      numeroOrden: row.numeroorden || '',
+      m3: row.m3 || 0,
       materials: row.materials,
       cliente: row.cliente,
       celular: row.celular,

@@ -89,8 +89,11 @@ const DispatchDetailModal: React.FC<DispatchDetailModalProps> = ({ dispatch, sho
                 <p><strong>Placa:</strong> {dispatch.placa || 'No especificado'}</p>
                 <p><strong>Color:</strong> {dispatch.color || 'No especificado'}</p>
                 <p><strong>Ficha:</strong> {dispatch.ficha || 'No especificado'}</p>
+                {dispatch.m3 > 0 && (
+                  <p><strong>Capacidad:</strong> <span className="badge bg-info text-dark">{dispatch.m3} m³</span></p>
+                )}
                 {dispatch.numeroOrden && (
-                  <p><strong>Número de Orden:</strong> {dispatch.numeroOrden}</p>
+                  <p><strong>Número de Orden:</strong> <span className="badge bg-warning text-dark">{dispatch.numeroOrden}</span></p>
                 )}
               </Col>
             </Row>

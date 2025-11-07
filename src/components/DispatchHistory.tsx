@@ -222,7 +222,9 @@ const DispatchHistory: React.FC<Props> = ({ dispatches, onDelete, isAdmin = fals
         `Placa: ${dispatch.placa || 'No especificado'}`,
         `Camión: ${dispatch.camion || 'No especificado'}`,
         `Color: ${dispatch.color || 'No especificado'}`,
-        `Ficha: ${dispatch.ficha || 'No especificado'}`
+        `Ficha: ${dispatch.ficha || 'No especificado'}`,
+        ...(dispatch.m3 > 0 ? [`Capacidad: ${dispatch.m3} m³`] : []),
+        ...(dispatch.numeroOrden ? [`Número de Orden: ${dispatch.numeroOrden}`] : [])
       ];
       
       info.forEach(line => {
@@ -314,6 +316,8 @@ const DispatchHistory: React.FC<Props> = ({ dispatches, onDelete, isAdmin = fals
                 <p><strong>Camión:</strong> ${dispatch.camion || 'No especificado'}</p>
                 <p><strong>Color:</strong> ${dispatch.color || 'No especificado'}</p>
                 <p><strong>Ficha:</strong> ${dispatch.ficha || 'No especificado'}</p>
+                ${dispatch.m3 > 0 ? `<p><strong>Capacidad:</strong> ${dispatch.m3} m³</p>` : ''}
+                ${dispatch.numeroOrden ? `<p><strong>Número de Orden:</strong> ${dispatch.numeroOrden}</p>` : ''}
               </div>
               
               <table class="materials-table">
