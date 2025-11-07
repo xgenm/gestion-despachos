@@ -17,6 +17,7 @@ import authRoutes from './routes/authRoutes';
 import auditRoutes from './routes/auditRoutes';
 import authenticateToken from './middleware/authMiddleware';
 import checkRole from './middleware/roleMiddleware';
+import { migrateAddNumeroOrden } from './migrations/add-numero-orden';
 
 const app = express();
 const port = process.env.PORT || 3002;
@@ -153,10 +154,17 @@ app.get('/', (req, res) => {
 
 // Iniciar el servidor (excepto cuando se exporta para Vercel)
 if (process.env.VERCEL !== '1') {
-  app.listen(port, () => {
+  app.listen(port, async () => {
     console.log(`✅ Backend escuchando en puerto ${port}`);
     console.log(`🌍 Entorno: ${process.env.NODE_ENV || 'development'}`);
     console.log(`📡 CORS configurado para Vercel frontend`);
+    
+    // Ejecutar migraciones automáticamente
+    try {
+      await migrateAddNumeroOrden();
+    } catch (error) {
+      console.error('⚠️ Error ejecutando migraciones:', error);
+    }
   });
 }
 
