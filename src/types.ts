@@ -7,6 +7,7 @@ export interface Dispatch {
   placa: string;
   color: string;
   ficha: string;
+  m3: number;
   materials: { id: string; quantity: number }[];
   cliente: string;
   celular: string;
@@ -15,6 +16,7 @@ export interface Dispatch {
   userId: number;
   equipmentId: number;
   operatorId: number;
+  caminoId?: number; // ID del camión si existe
   // Campos opcionales que vienen de los JOINs
   userName?: string;
   equipmentName?: string;

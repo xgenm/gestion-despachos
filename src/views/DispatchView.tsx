@@ -79,6 +79,7 @@ const DispatchView: React.FC = () => {
         placa: newDispatch.placa,
         color: newDispatch.color || '',
         ficha: newDispatch.ficha || '',
+        m3: newDispatch.m3 || null,
         materials: newDispatch.materials,
         cliente: newDispatch.cliente,
         celular: newDispatch.celular || '',

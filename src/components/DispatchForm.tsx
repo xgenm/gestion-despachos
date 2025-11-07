@@ -173,7 +173,12 @@ const DispatchForm: React.FC<Props> = ({ onSubmit }) => {
       Object.keys(selectedMaterials).forEach(key => {
         newMaterials[key] = { selected: false, quantity: 0 };
       });
-      newMaterials[materialId] = { selected: true, quantity: selectedMaterials[materialId]?.quantity || 0 };
+      
+      // Autocompletar con los M³ del camión
+      const autoQuantity = Number(formData.m3) > 0 ? Number(formData.m3) : 0;
+      newMaterials[materialId] = { selected: true, quantity: autoQuantity };
+      
+      console.log(`📦 Material seleccionado: ${materialId}, cantidad automática: ${autoQuantity} M³`);
       setSelectedMaterials(newMaterials);
     }
   };
