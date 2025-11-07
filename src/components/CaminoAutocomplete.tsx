@@ -32,7 +32,7 @@ const CaminoAutocomplete: React.FC<Props> = ({
   const [showNewCaminoForm, setShowNewCaminoForm] = useState(false);
   const [newCamino, setNewCamino] = useState({ marca: '', color: '', m3: '', ficha: '' });
 
-  const handleSearchPlaca = async (e: React.FormEvent) => {
+  const handleSearchPlaca = async (e: React.MouseEvent | React.FormEvent) => {
     e.preventDefault();
     
     console.log('='.repeat(50));
@@ -123,8 +123,8 @@ const CaminoAutocomplete: React.FC<Props> = ({
 
   return (
     <div className="mb-3 p-3 bg-light rounded">
-      <h5>Buscar/Crear Camión por Placa [v2.1]</h5>
-      <Form onSubmit={handleSearchPlaca}>
+      <h5>Buscar/Crear Camión por Placa [v2.2]</h5>
+      <div>
         <Form.Group className="mb-3">
           <Form.Label>Placa</Form.Label>
           <Form.Control
@@ -134,17 +134,23 @@ const CaminoAutocomplete: React.FC<Props> = ({
             onChange={(e) => onPlacaChange(e.target.value.toUpperCase())}
             disabled={isSearching}
             maxLength={10}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                handleSearchPlaca(e as any);
+              }
+            }}
           />
           <Form.Text className="text-muted">Máximo 10 caracteres alfanuméricos</Form.Text>
         </Form.Group>
         <Button 
           variant="primary" 
-          type="submit" 
+          onClick={handleSearchPlaca}
           disabled={!placa.trim() || isSearching}
         >
           {isSearching ? 'Buscando...' : 'Buscar Camión'}
         </Button>
-      </Form>
+      </div>
 
       {searchMessage && (
         <Alert 
