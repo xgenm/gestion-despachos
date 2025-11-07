@@ -192,6 +192,7 @@ const DispatchForm: React.FC<Props> = ({ onSubmit }) => {
 
   const handleCaminoFound = (camino: any) => {
     console.log('🚛 handleCaminoFound ejecutado con:', camino);
+    console.log('📋 formData ANTES:', formData);
     setCaminoData(camino);
     const newFormData = {
       ...formData,
@@ -203,7 +204,9 @@ const DispatchForm: React.FC<Props> = ({ onSubmit }) => {
       caminoId: camino.id
     };
     console.log('📝 Nuevo formData:', newFormData);
+    console.log('✅ Actualizando state con setFormData...');
     setFormData(newFormData);
+    console.log('✅ State actualizado');
   };
 
   const handleCaminoNotFound = () => {
@@ -353,6 +356,13 @@ const DispatchForm: React.FC<Props> = ({ onSubmit }) => {
             onCaminoNotFound={handleCaminoNotFound}
             isReadOnly={user?.role === 'employee'}
           />
+
+          {/* DEBUG: Estado actual */}
+          {process.env.NODE_ENV === 'development' && (
+            <div className="alert alert-info mb-3" style={{fontSize: '11px'}}>
+              <strong>DEBUG:</strong> formData.camion="{formData.camion}" | formData.color="{formData.color}" | formData.m3={formData.m3} | caminoData={caminoData ? 'SET' : 'NULL'}
+            </div>
+          )}
 
           {/* Campos del Camión rellenados automáticamente */}
           <Row className="mb-3">
