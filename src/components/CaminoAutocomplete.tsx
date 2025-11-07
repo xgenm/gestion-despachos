@@ -34,6 +34,11 @@ const CaminoAutocomplete: React.FC<Props> = ({
 
   const handleSearchPlaca = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    console.log('='.repeat(50));
+    console.log('INICIO BÚSQUEDA DE CAMIÓN - VERSION 2.2');
+    console.log('='.repeat(50));
+    
     if (!placa.trim()) {
       setSearchMessage('Ingresa una placa');
       return;
